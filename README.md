@@ -1,3 +1,12 @@
+[hugo]: https://github.com/HugoCarvalho99
+[hugo-pic]: https://github.com/HugoCarvalho99.png?size=120
+[nelson]: https://github.com/nelsonmestevao
+[nelson-pic]: https://github.com/nelsonmestevao.png?size=120
+[pedro]: https://github.com/pedroribeiro22
+[pedro-pic]: https://github.com/pedroribeiro22.png?size=120
+[rui]: https://github.com/ruimendes29
+[rui-pic]: https://github.com/ruimendes29.png?size=120
+
 # MediaFile Share
 > A distributed MediaFile sharing system
 
@@ -48,3 +57,13 @@ Bundling the app into jar file.
 ```
 mvn package
 ```
+
+### :hammer_and_wrench: Tools
+
+The recommended Integrated Development Environment (IDE) is IntelliJ IDEA.
+
+## :busts_in_silhouette: Team
+
+[![Hugo][hugo-pic]][hugo] | [![Nelson][nelson-pic]][nelson] | [![Pedro][pedro-pic]][pedro] | [![Rui][rui-pic]][rui] 
+:---: | :---: | :---: | :---: 
+[Hugo Carvalho][hugo] | [Nelson Estevão][nelson] | [Pedro Ribeiro][pedro] | [Rui Mendes][rui]
