@@ -9,6 +9,7 @@ import java.net.Socket;
 import java.util.List;
 
 public final class Server {
+
     private static ServerSocket socket;
 
     private Server() {
