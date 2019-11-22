@@ -57,6 +57,7 @@
                 <version>2.10.0</version>
                 <configuration>
                     <encoding>${project.encoding}</encoding>
+                    <configFile>.formatter.xml</configFile>
                 </configuration>
             </plugin>
             <plugin>

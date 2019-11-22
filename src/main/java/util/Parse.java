@@ -15,8 +15,7 @@ public final class Parse {
     /**
      * Function that reads all lines from a file.
      *
-     * @param file
-     *            from where should read
+     * @param file from where should read
      * @return List of Strings
      */
     public static List<String> read(final String file) {

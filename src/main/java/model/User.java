@@ -7,7 +7,7 @@ import java.util.Objects;
 
 public final class User {
 
-    @SuppressWarnings({ "checkstyle:MagicNumber" })
+    @SuppressWarnings("checkstyle:MagicNumber")
     public static String encryptPassword(final String password) {
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-256");

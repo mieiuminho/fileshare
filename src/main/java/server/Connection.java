@@ -8,7 +8,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 
-@SuppressWarnings({ "checkstyle:VisibilityModifier", "checkstyle:MagicNumber" })
+@SuppressWarnings({"checkstyle:VisibilityModifier", "checkstyle:MagicNumber"})
 public final class Connection implements Runnable {
     public static String hostname = "127.0.0.1";
     public static int port = 12345;
