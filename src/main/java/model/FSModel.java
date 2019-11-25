@@ -1,5 +1,6 @@
 package model;
 
+import exceptions.AuthenticationException;
 import exceptions.DuplicateUserException;
 import exceptions.DuplicateSongException;
 import exceptions.InexistentSongException;
@@ -42,15 +43,15 @@ public final class FSModel {
         }
     }
 
-    public boolean containsUser(final String username) {
+    public void login(final String username, final String password) throws AuthenticationException {
         synchronized (this.users) {
-            return this.users.containsKey(username);
-        }
-    }
+            if (!this.users.containsKey(username)) {
+                throw new AuthenticationException("Username isn't registered");
+            }
 
-    public boolean matchPassword(final String username, final String password) {
-        synchronized (this.users) {
-            return this.users.get(username).validate(password);
+            if (!this.users.get(username).validate(password)) {
+                throw new AuthenticationException("Incorrect password");
+            }
         }
     }
 

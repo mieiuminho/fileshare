@@ -39,7 +39,7 @@ public final class Session implements Runnable {
             while ((message = in.readLine()) != null && !message.equals("quit")) {
                 String[] argv = message.split(" ");
                 Command cmd = Command.getValue(argv[0]);
-                out.println("Reply from server: " + message + "(" + cmd + ")");
+                out.println(message + " (" + cmd + ")");
                 out.flush();
             }
 
@@ -53,13 +53,16 @@ public final class Session implements Runnable {
         }
     }
 
-    private void login(final String username, final String password) throws AuthenticationException {
-        if (!this.model.containsUser(username)) {
-            throw new AuthenticationException("Username isn't registered");
+    private void login(final String username, final String password) {
+        try {
+            this.model.login(username, password);
+            this.loggedIn = username;
+        } catch (AuthenticationException exception) {
+            Terminal.error(exception.toString());
         }
-        if (!this.model.matchPassword(username, password)) {
-            throw new AuthenticationException("Incorrect password");
-        }
-        this.loggedIn = username;
+    }
+
+    private void logout() {
+        this.loggedIn = null;
     }
 }
