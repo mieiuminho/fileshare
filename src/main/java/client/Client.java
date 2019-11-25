@@ -1,6 +1,6 @@
 package client;
 
-import server.Connection;
+import server.Session;
 import util.Parse;
 import view.Terminal;
 
@@ -21,8 +21,8 @@ public final class Client {
         Client.welcome();
 
         try {
-            Socket socket = new Socket(Connection.hostname, Connection.port);
-            Terminal.info("Connection established with server on " + Connection.hostname + ":" + Connection.port);
+            Socket socket = new Socket(Session.hostname, Session.port);
+            Terminal.info("Session established with server on " + Session.hostname + ":" + Session.port);
 
             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             PrintWriter out = new PrintWriter(socket.getOutputStream());

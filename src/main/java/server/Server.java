@@ -1,5 +1,6 @@
 package server;
 
+import model.FSModel;
 import util.Parse;
 import view.Terminal;
 
@@ -18,9 +19,11 @@ public final class Server {
     public static void main(final String[] args) {
         Server.welcome();
 
+        FSModel model = new FSModel();
+
         try {
-            Server.socket = new ServerSocket(Connection.port);
-            Terminal.info("Server on port " + Connection.port);
+            Server.socket = new ServerSocket(Session.port);
+            Terminal.info("Server on port " + Session.port);
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -31,8 +34,8 @@ public final class Server {
             try {
                 Terminal.info("Waiting for connection...");
                 Socket clientServer = Server.socket.accept();
-                Terminal.info("Connection " + i + " established!");
-                new Thread(new Connection(clientServer, i)).start();
+                Terminal.info("Session " + i + " established!");
+                new Thread(new Session(clientServer, i, model)).start();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -46,4 +49,5 @@ public final class Server {
 
         Terminal.show(logo);
     }
+
 }
