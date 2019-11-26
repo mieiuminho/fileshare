@@ -37,9 +37,14 @@ public final class Session implements Runnable {
             String message;
 
             while ((message = in.readLine()) != null && !message.equals("quit")) {
-                String[] argv = message.split(" ");
-                Command cmd = Command.getValue(argv[0]);
-                out.println(message + " (" + cmd + ")");
+                String response;
+                try {
+                    response = Worker.run(message.split(" "));
+                } catch (Exception e) {
+                    response = "ERROR: " + e.getMessage();
+                }
+
+                out.println(response);
                 out.flush();
             }
 
