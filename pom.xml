@@ -11,6 +11,38 @@
     <name>MediaFile Share</name>
     <description>A distributed MediaFile sharing system</description>
 
+    <developers>
+        <developer>
+            <id>HugoCarvalho99</id>
+            <name>Hugo Carvalho</name>
+            <properties>
+                <picUrl>https://github.com/HugoCarvalho99.png?size=120</picUrl>
+            </properties>
+        </developer>
+        <developer>
+            <id>nelsonmestevao</id>
+            <name>Nelson Estevão</name>
+            <email>hello@estevao.xyz</email>
+            <properties>
+                <picUrl>https://github.com/nelsonmestevao.png?size=120</picUrl>
+            </properties>
+        </developer>
+        <developer>
+            <id>pedroribeiro22</id>
+            <name>Pedro Ribeiro</name>
+            <properties>
+                <picUrl>https://github.com/pedroribeiro22.png?size=120</picUrl>
+            </properties>
+        </developer>
+        <developer>
+            <id>ruimendes29</id>
+            <name>Rui Mendes</name>
+            <properties>
+                <picUrl>https://github.com/ruimendes29.png?size=120</picUrl>
+            </properties>
+        </developer>
+    </developers>
+
     <properties>
         <java.version>11</java.version>
         <project.encoding>UTF-8</project.encoding>

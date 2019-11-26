@@ -49,12 +49,13 @@ javadocs:
   only:
     - merge_request
 
-site:
+pages:
   stage: docs
   script:
     - mvn $MAVEN_CLI_OPTS site:site
+    - mv target/site public/
   only:
-    - merge_request
+    - master
   artifacts:
     paths:
-      - target/site
+      - public/
