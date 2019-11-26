@@ -12,12 +12,7 @@ import java.net.Socket;
 
 @SuppressWarnings({"checkstyle:VisibilityModifier", "checkstyle:MagicNumber"})
 public final class Session implements Runnable {
-
-    public static String hostname = "127.0.0.1";
-    public static int port = 12345;
-
     private int id;
-
     private final Socket socket;
     private final FSModel model;
     private String loggedIn;

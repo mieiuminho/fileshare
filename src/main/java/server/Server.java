@@ -10,6 +10,7 @@ import java.net.Socket;
 import java.util.List;
 
 public final class Server {
+    private static int port = Integer.parseInt(System.getenv("FILESHARE_SERVER_PORT"));
 
     private static ServerSocket socket;
 
@@ -22,8 +23,8 @@ public final class Server {
         FSModel model = new FSModel();
 
         try {
-            Server.socket = new ServerSocket(Session.port);
-            Terminal.info("Server on port " + Session.port);
+            Server.socket = new ServerSocket(Server.port);
+            Terminal.info("Server is up at " + Server.socket.getLocalSocketAddress());
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -34,7 +35,7 @@ public final class Server {
             try {
                 Terminal.info("Waiting for connection...");
                 Socket clientServer = Server.socket.accept();
-                Terminal.info("Session " + i + " established!");
+                Terminal.info("Session " + i + " established on " + clientServer.getRemoteSocketAddress());
                 new Thread(new Session(clientServer, i, model)).start();
             } catch (IOException e) {
                 e.printStackTrace();

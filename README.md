@@ -8,9 +8,15 @@
 [rui-pic]: https://github.com/ruimendes29.png?size=120
 
 # MediaFile Share
-> A distributed MediaFile sharing system
+
+> A distributed  file sharing system
 
 ## :rocket: Getting Started
+
+This project uses settings configured in environment variables defined in the
+`.env` file. In order to get those properly exported is recommend to set up
+[direnv](https://direnv.net/) for work flows terminal based and the plugin
+[EnvFile](https://github.com/Ashald/EnvFile) for IntelliJ.
 
 ### :hammer: Development
 
@@ -64,6 +70,7 @@ The recommended Integrated Development Environment (IDE) is IntelliJ IDEA.
 
 ## :busts_in_silhouette: Team
 
-[![Hugo][hugo-pic]][hugo] | [![Nelson][nelson-pic]][nelson] | [![Pedro][pedro-pic]][pedro] | [![Rui][rui-pic]][rui] 
-:---: | :---: | :---: | :---: 
+[![Hugo][hugo-pic]][hugo] | [![Nelson][nelson-pic]][nelson] | [![Pedro][pedro-pic]][pedro] | [![Rui][rui-pic]][rui]
+:---: | :---: | :---: | :---:
 [Hugo Carvalho][hugo] | [Nelson Estevão][nelson] | [Pedro Ribeiro][pedro] | [Rui Mendes][rui]
+

@@ -1,6 +1,5 @@
 package client;
 
-import server.Session;
 import util.Parse;
 import view.Terminal;
 
@@ -12,6 +11,8 @@ import java.net.Socket;
 import java.util.List;
 
 public final class Client {
+    private static String hostname = System.getenv("FILESHARE_SERVER_HOSTNAME");
+    private static int port = Integer.parseInt(System.getenv("FILESHARE_SERVER_PORT"));
 
     private Client() {
     }
@@ -21,8 +22,9 @@ public final class Client {
         Client.welcome();
 
         try {
-            Socket socket = new Socket(Session.hostname, Session.port);
-            Terminal.info("Session established with server on " + Session.hostname + ":" + Session.port);
+            Socket socket = new Socket(hostname, port);
+            Terminal.info("Client is up at " + socket.getLocalSocketAddress());
+            Terminal.info("Session established with server on " + socket.getRemoteSocketAddress());
 
             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             PrintWriter out = new PrintWriter(socket.getOutputStream());
