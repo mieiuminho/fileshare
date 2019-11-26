@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public final class Song {
 
@@ -13,15 +15,15 @@ public final class Song {
     private int year;
     private List<String> tags;
     private int numDownloads;
+    private Lock lock;
 
-    public Song(final String title, final String artist, final int year, final Collection<String> c,
-            final String path) {
+    public Song(final String title, final String artist, final int year, final Collection<String> c, final int id) {
         this.title = title;
         this.artist = artist;
         this.year = year;
         this.tags = new ArrayList<>(c);
-        this.id = this.hashCode();
-
+        this.id = id;
+        this.lock = new ReentrantLock();
         this.numDownloads = 0;
     }
 
@@ -29,10 +31,14 @@ public final class Song {
         return id;
     }
 
-    public void download() {
+    public String getTitle() {
+        return this.title;
+    }
 
-        // [WIP] DOWNLOAD FILE
+    public void download() {
+        this.lock.lock();
         this.numDownloads++;
+        this.lock.unlock();
     }
 
     public boolean filter(final String tag) {
