@@ -8,8 +8,6 @@ import java.util.Random;
 
 public final class User {
 
-    private static final int SEEDSIZE = 3;
-
     @SuppressWarnings("checkstyle:MagicNumber")
     public static String encryptPassword(final String password) {
         try {
@@ -30,7 +28,7 @@ public final class User {
     @SuppressWarnings("checkstyle:MagicNumber")
     public static String generateHashingSeed() {
         StringBuilder sb = new StringBuilder("");
-        for (int i = 0; i < SEEDSIZE; i++) {
+        for (int i = 0; i < 4; i++) {
             Random r = new Random();
             char c = (char) (r.nextInt(26) + 'a');
             sb.insert(i, c);
@@ -45,11 +43,17 @@ public final class User {
     public User(final String username, final String password) {
         this.username = username;
         this.seed = User.generateHashingSeed();
-        this.password = User.encryptPassword(seed + password);
+        this.password = User.encryptPassword(this.seed + password);
+    }
+
+    public User(final String username, final String hashedPassword, final String seed) {
+        this.username = username;
+        this.password = hashedPassword;
+        this.seed = seed;
     }
 
     public boolean validate(final String input) {
-        return User.encryptPassword(seed + input).equals(this.password);
+        return User.encryptPassword(this.seed + input).equals(this.password);
     }
 
     public String getUsername() {
@@ -65,7 +69,7 @@ public final class User {
     }
 
     public void setPassword(final String password) {
-        this.password = User.encryptPassword(seed + password);
+        this.password = User.encryptPassword(this.seed + password);
     }
 
     public boolean equals(final Object o) {
