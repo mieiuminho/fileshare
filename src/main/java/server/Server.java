@@ -1,6 +1,6 @@
 package server;
 
-import model.FSModel;
+import model.FileShare;
 import util.Parse;
 import view.Terminal;
 
@@ -20,7 +20,7 @@ public final class Server {
     public static void main(final String[] args) {
         Server.welcome();
 
-        FSModel model = new FSModel();
+        FileShare model = new FileShare();
 
         try {
             Server.socket = new ServerSocket(Server.port);

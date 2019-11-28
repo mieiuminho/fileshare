@@ -1,7 +1,7 @@
 package server;
 
 import exceptions.AuthenticationException;
-import model.FSModel;
+import model.FileShare;
 import view.Terminal;
 
 import java.io.BufferedReader;
@@ -14,10 +14,10 @@ import java.net.Socket;
 public final class Session implements Runnable {
     private int id;
     private final Socket socket;
-    private final FSModel model;
+    private final FileShare model;
     private String loggedIn;
 
-    public Session(final Socket socket, final int id, final FSModel model) {
+    public Session(final Socket socket, final int id, final FileShare model) {
         this.socket = socket;
         this.id = id;
         this.model = model;

@@ -16,11 +16,11 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-public final class FSModel {
+public final class FileShare {
     private static final int MEGA = 1048576;
     private static final int MAXDOWN = 5;
     private static final int MAXSIZE = MEGA;
-    private static final String SONGDIR = "./data";
+    private static final String SONGDIR = System.getenv("FILESHARE_SERVER_DATA_DIR");
 
     private Map<String, User> users;
     private Map<Integer, Song> songs;
@@ -29,7 +29,7 @@ public final class FSModel {
     private int downloading;
     private int songCounter;
 
-    public FSModel() {
+    public FileShare() {
         this.users = new HashMap<>();
         this.songs = new HashMap<>();
         this.lock = new ReentrantLock();
@@ -85,7 +85,7 @@ public final class FSModel {
                 throw new InexistentSongException();
             }
         }
-        File file = new File(SONGDIR + "/" + this.songs.get(id).getTitle());
+        File file = new File(SONGDIR + this.songs.get(id).getTitle());
         return file.length();
     }
 
@@ -115,7 +115,7 @@ public final class FSModel {
             this.lock.unlock();
         }
 
-        String buffer = SONGDIR + "/" + this.songs.get(id).getTitle();
+        String buffer = SONGDIR + this.songs.get(id).getTitle();
 
         return Downloader.toArray(buffer, offset, MAXSIZE);
     }
