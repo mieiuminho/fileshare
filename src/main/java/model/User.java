@@ -4,8 +4,11 @@ import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Objects;
+import java.util.Random;
 
 public final class User {
+
+    private static final int SEEDSIZE = 3;
 
     @SuppressWarnings("checkstyle:MagicNumber")
     public static String encryptPassword(final String password) {
@@ -24,16 +27,29 @@ public final class User {
         }
     }
 
+    @SuppressWarnings("checkstyle:MagicNumber")
+    public static String generateHashingSeed() {
+        StringBuilder sb = new StringBuilder("");
+        for (int i = 0; i < SEEDSIZE; i++) {
+            Random r = new Random();
+            char c = (char) (r.nextInt(26) + 'a');
+            sb.insert(i, c);
+        }
+        return sb.toString();
+    }
+
     private String username;
     private String password;
+    private String seed;
 
     public User(final String username, final String password) {
         this.username = username;
-        this.password = User.encryptPassword(password);
+        this.seed = User.generateHashingSeed();
+        this.password = User.encryptPassword(seed + password);
     }
 
     public boolean validate(final String input) {
-        return User.encryptPassword(input).equals(this.password);
+        return User.encryptPassword(seed + input).equals(this.password);
     }
 
     public String getUsername() {
@@ -49,7 +65,7 @@ public final class User {
     }
 
     public void setPassword(final String password) {
-        this.password = User.encryptPassword(password);
+        this.password = User.encryptPassword(seed + password);
     }
 
     public boolean equals(final Object o) {
