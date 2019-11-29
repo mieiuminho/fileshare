@@ -1,5 +1,9 @@
 package server;
 
+import model.FileShare;
+
+import java.io.PrintWriter;
+
 public interface Command {
-    String run(String[] argv);
+    void run(String[] argv, PrintWriter out, FileShare model);
 }

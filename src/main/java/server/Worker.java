@@ -1,59 +1,87 @@
 package server;
 
+import model.FileShare;
+import util.BoundedBuffer;
+
+import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.Map;
 
 import static java.util.Map.entry;
 
-public final class Worker {
-    private Worker() {
-    }
+public final class Worker implements Runnable {
+    private BoundedBuffer<String> requests;
+    private Map<Integer, PrintWriter> replies;
+    private FileShare model;
 
-    private static Map<String, Command> commands = Map.ofEntries( //
-            entry("register", argv -> {
+    private static Map<String, Command> commands = Map.ofEntries(//
+            entry("register", (argv, out, model) -> {
                 String response = "REGISTER?";
                 for (String arg : argv)
                     response += " " + arg;
-                return response;
-            }), entry("login", argv -> {
+                out.println(response);
+                out.flush();
+            }), entry("login", (argv, out, model) -> {
                 String response = "LOGIN?";
                 for (String arg : argv)
                     response += " " + arg;
-                return response;
-            }), entry("upload", argv -> {
+                out.println(response);
+                out.flush();
+            }), entry("upload", (argv, out, model) -> {
                 String response = "UPLOAD?";
                 for (String arg : argv)
                     response += " " + arg;
-                return response;
-            }), entry("download", argv -> {
+                out.println(response);
+                out.flush();
+            }), entry("download", (argv, out, model) -> {
                 String response = "DOWNLOAD?";
                 for (String arg : argv)
                     response += " " + arg;
-                return response;
-            }), entry("search", argv -> {
+                out.println(response);
+                out.flush();
+            }), entry("search", (argv, out, model) -> {
                 String response = "SEARCH?";
                 for (String arg : argv)
                     response += " " + arg;
-                return response;
+                out.println(response);
+                out.flush();
             }) //
     );
 
-    public static String run(final String[] argv) throws Exception {
-        String command = argv[0].toLowerCase();
+    public Worker(final BoundedBuffer<String> requests, final Map<Integer, PrintWriter> replies,
+            final FileShare model) {
+        this.requests = requests;
+        this.replies = replies;
+        this.model = model;
+    }
 
-        if (command.equals("help")) {
-            String listOfCommands = "List of Available Commands:";
+    @Override
+    public void run() {
+        while (true) {
+            try {
+                String[] argv = this.requests.get().split(" ");
+                int id = Integer.parseInt(argv[0]);
+                @SuppressWarnings("checkstyle:AvoidInlineConditionals")
+                String command = argv.length >= 2 ? argv[1].toLowerCase() : "help";
+                PrintWriter out = this.replies.get(id);
 
-            for (String cmd : Worker.commands.keySet()) {
-                listOfCommands += " " + cmd + ";";
+                synchronized (out) {
+                    if (Worker.commands.containsKey(command)) {
+                        Worker.commands.get(command).run(Arrays.copyOfRange(argv, 2, argv.length), out, this.model);
+                    } else {
+                        String listOfCommands = "List of Available Commands:";
+
+                        for (String cmd : Worker.commands.keySet()) {
+                            listOfCommands += " " + cmd + ";";
+                        }
+
+                        out.println(listOfCommands);
+                        out.flush();
+                    }
+                }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
-
-            return listOfCommands;
         }
-
-        if (commands.containsKey(command)) {
-            return commands.get(command).run(Arrays.copyOfRange(argv, 1, argv.length));
-        } else
-            throw new Exception("Operation not supported");
     }
 }

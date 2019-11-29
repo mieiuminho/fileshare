@@ -11,18 +11,23 @@ import java.net.Socket;
 import java.util.List;
 
 public final class Client {
-    private static String hostname = System.getenv("FILESHARE_SERVER_HOSTNAME");
-    private static int port = Integer.parseInt(System.getenv("FILESHARE_SERVER_PORT"));
+    private static final String HOSTNAME = System.getenv("FILESHARE_SERVER_HOSTNAME");
+    private static final int PORT = Integer.parseInt(System.getenv("FILESHARE_SERVER_PORT"));
 
-    private Client() {
+    private Socket socket;
+
+    public Client() {
+    }
+
+    public static void main(final String[] args) {
+        Client.welcome();
+        new Client().startUp();
     }
 
     @SuppressWarnings("checkstyle:InnerAssignment")
-    public static void main(final String[] args) {
-        Client.welcome();
-
+    public void startUp() {
         try {
-            Socket socket = new Socket(hostname, port);
+            this.socket = new Socket(HOSTNAME, PORT);
             Terminal.info("Client is up at " + socket.getLocalSocketAddress());
             Terminal.info("Session established with server on " + socket.getRemoteSocketAddress());
 
