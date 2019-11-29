@@ -1,6 +1,8 @@
 package server;
 
 import model.FileShare;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import util.BoundedBuffer;
 
 import java.io.PrintWriter;
@@ -14,6 +16,7 @@ public final class Worker implements Runnable {
     private Map<Integer, PrintWriter> replies;
     private FileShare model;
 
+    private static Logger log = LogManager.getLogger(Worker.class);
     private static Map<String, Command> commands = Map.ofEntries(//
             entry("register", (argv, out, model) -> {
                 String response = "REGISTER?";
@@ -62,13 +65,18 @@ public final class Worker implements Runnable {
                 String[] argv = this.requests.get().split(" ");
                 int id = Integer.parseInt(argv[0]);
                 @SuppressWarnings("checkstyle:AvoidInlineConditionals")
-                String command = argv.length >= 2 ? argv[1].toLowerCase() : "help";
+                String command = argv.length >= 2 ? argv[1].toLowerCase() : "HELP";
                 PrintWriter out = this.replies.get(id);
 
                 synchronized (out) {
                     if (Worker.commands.containsKey(command)) {
+                        log.debug("(" + id + ") task: " + command);
                         Worker.commands.get(command).run(Arrays.copyOfRange(argv, 2, argv.length), out, this.model);
                     } else {
+                        if (!command.equals("help")) {
+                            log.warn("(" + id + ") request not available: " + command);
+                        } else
+                            log.debug("(" + id + ") request for help");
                         String listOfCommands = "List of Available Commands:";
 
                         for (String cmd : Worker.commands.keySet()) {

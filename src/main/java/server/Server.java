@@ -1,6 +1,8 @@
 package server;
 
 import model.FileShare;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import util.BoundedBuffer;
 import util.Parse;
 import view.Terminal;
@@ -17,6 +19,7 @@ public final class Server {
     private static final int PORT = Integer.parseInt(System.getenv("FILESHARE_SERVER_PORT"));
     private static final int N_WORKERS = 5;
     private static final int REQUESTS_MAX_SIZE = 10;
+    private static Logger log = LogManager.getLogger(Server.class);
 
     private ServerSocket socket;
     private BoundedBuffer<String> requests;
@@ -35,10 +38,12 @@ public final class Server {
     }
 
     public void startUp() {
+        log.debug("Working Directory " + System.getProperty("user.dir"));
+
         // criar o servidor
         try {
             this.socket = new ServerSocket(Server.PORT);
-            Terminal.info("Server is up at " + this.socket.getLocalSocketAddress());
+            log.info("Server is up at " + this.socket.getLocalSocketAddress());
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -49,17 +54,17 @@ public final class Server {
         }
 
         // aceitar ligações
-        int i = 1;
+        int id = N_WORKERS + 1;
         while (true) {
             try {
-                Terminal.info("Waiting for connection...");
+                log.info("Waiting for connection...");
                 Socket clientServer = this.socket.accept();
-                Terminal.info("Session " + i + " established on " + clientServer.getRemoteSocketAddress());
-                new Thread(new Session(i, clientServer, this.requests, this.replies, this.model)).start();
+                new Thread(new Session(id, clientServer, this.requests, this.replies, this.model)).start();
+                log.debug("Session " + id + " accepted connection");
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            i++;
+            id++;
         }
     }
 

@@ -2,6 +2,8 @@ package server;
 
 import exceptions.AuthenticationException;
 import model.FileShare;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import util.BoundedBuffer;
 import view.Terminal;
 
@@ -14,6 +16,8 @@ import java.util.Map;
 
 @SuppressWarnings({"checkstyle:VisibilityModifier", "checkstyle:MagicNumber"})
 public final class Session implements Runnable {
+    private static Logger log = LogManager.getLogger(Session.class);
+
     private int id;
     private final Socket socket;
     private BoundedBuffer<String> requests;
@@ -34,6 +38,8 @@ public final class Session implements Runnable {
     @SuppressWarnings("checkstyle:InnerAssignment")
     @Override
     public void run() {
+        log.info("Session " + this.id + " established on " + this.socket.getRemoteSocketAddress());
+
         try {
             BufferedReader in = new BufferedReader(new InputStreamReader(this.socket.getInputStream()));
 
@@ -44,6 +50,7 @@ public final class Session implements Runnable {
             String message;
             while ((message = in.readLine()) != null && !message.equals("quit")) {
                 try {
+                    log.trace("(" + this.id + ") request: " + message);
                     this.requests.add(this.id + " " + message);
                 } catch (InterruptedException e) {
                     PrintWriter out = this.replies.get(this.id);
@@ -51,6 +58,8 @@ public final class Session implements Runnable {
                         out.println("ERROR: Couldn't add your request (" + message + ")");
                         out.flush();
                     }
+                    log.error(this.id + ": " + e.getMessage());
+                    e.printStackTrace();
                 }
             }
 
@@ -61,9 +70,9 @@ public final class Session implements Runnable {
             this.socket.shutdownOutput();
             this.socket.shutdownInput();
             this.socket.close();
-            Terminal.info("Session " + this.id + " finished!");
-
+            log.info("Session " + this.id + " finished!");
         } catch (IOException e) {
+            log.error(this.id + ": " + e.getMessage());
             e.printStackTrace();
         }
     }
