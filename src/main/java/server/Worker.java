@@ -9,47 +9,34 @@ public final class Worker {
     private Worker() {
     }
 
-    private static Map<String, Command> commands = Map.ofEntries(entry("register", new Command() {
-        @Override
-        public String run(final String[] argv) {
-            String response = "REGISTER?";
-            for (String arg : argv)
-                response += " " + arg;
-            return response;
-        }
-    }), entry("login", new Command() {
-        @Override
-        public String run(final String[] argv) {
-            String response = "LOGIN?";
-            for (String arg : argv)
-                response += " " + arg;
-            return response;
-        }
-    }), entry("upload", new Command() {
-        @Override
-        public String run(final String[] argv) {
-            String response = "UPLOAD?";
-            for (String arg : argv)
-                response += " " + arg;
-            return response;
-        }
-    }), entry("download", new Command() {
-        @Override
-        public String run(final String[] argv) {
-            String response = "DOWNLOAD?";
-            for (String arg : argv)
-                response += " " + arg;
-            return response;
-        }
-    }), entry("search", new Command() {
-        @Override
-        public String run(final String[] argv) {
-            String response = "SEARCH?";
-            for (String arg : argv)
-                response += " " + arg;
-            return response;
-        }
-    }));
+    private static Map<String, Command> commands = Map.ofEntries( //
+            entry("register", argv -> {
+                String response = "REGISTER?";
+                for (String arg : argv)
+                    response += " " + arg;
+                return response;
+            }), entry("login", argv -> {
+                String response = "LOGIN?";
+                for (String arg : argv)
+                    response += " " + arg;
+                return response;
+            }), entry("upload", argv -> {
+                String response = "UPLOAD?";
+                for (String arg : argv)
+                    response += " " + arg;
+                return response;
+            }), entry("download", argv -> {
+                String response = "DOWNLOAD?";
+                for (String arg : argv)
+                    response += " " + arg;
+                return response;
+            }), entry("search", argv -> {
+                String response = "SEARCH?";
+                for (String arg : argv)
+                    response += " " + arg;
+                return response;
+            }) //
+    );
 
     public static String run(final String[] argv) throws Exception {
         String command = argv[0].toLowerCase();
