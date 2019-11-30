@@ -10,6 +10,7 @@
 
     <name>MediaFile Share</name>
     <description>A distributed MediaFile sharing system</description>
+    <url>https://mieiuminho.gitlab.io/SD/fileshare/</url>
 
     <developers>
         <developer>
