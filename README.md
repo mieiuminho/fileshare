@@ -7,7 +7,9 @@
 [rui]: https://github.com/ruimendes29
 [rui-pic]: https://github.com/ruimendes29.png?size=120
 
-# MediaFile Share
+<div align="center">
+    <img src="img/logo.png" alt="File Share" width="400px">
+</div>
 
 > A distributed  file sharing system
 

@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+
 public final class Server {
     private static final int PORT = Integer.parseInt(System.getenv("FILESHARE_SERVER_PORT"));
     private static final int N_WORKERS = 5;
@@ -70,7 +71,7 @@ public final class Server {
 
     public static void welcome() {
         Terminal.clear();
-        List<String> logo = Parse.read("img/server.ascii");
+        List<String> logo = Parse.read(Server.class.getResource("../art/server.ascii").toString().split(":")[1]);
 
         Terminal.show(logo);
     }

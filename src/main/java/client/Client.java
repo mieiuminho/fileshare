@@ -1,14 +1,14 @@
 package client;
 
-import util.Parse;
-import view.Terminal;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.List;
+import util.Parse;
+import view.Terminal;
+
 
 public final class Client {
     private static final String HOSTNAME = System.getenv("FILESHARE_SERVER_HOSTNAME");
@@ -57,7 +57,7 @@ public final class Client {
 
     public static void welcome() {
         Terminal.clear();
-        List<String> logo = Parse.read("img/client.ascii");
+        List<String> logo = Parse.read(Client.class.getResource("../art/logo.ascii").toString().split(":")[1]);
 
         Terminal.show(logo);
     }
