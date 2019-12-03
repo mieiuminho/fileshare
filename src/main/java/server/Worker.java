@@ -17,14 +17,9 @@ public final class Worker implements Runnable {
     private FileShare model;
 
     private static Logger log = LogManager.getLogger(Worker.class);
-    private static Map<String, Command> commands = Map.ofEntries(//
-            entry("register", (argv, out, model) -> {
-                String response = "REGISTER?";
-                for (String arg : argv)
-                    response += " " + arg;
-                out.println(response);
-                out.flush();
-            }), entry("upload", (argv, out, model) -> {
+    @SuppressWarnings("checkstyle:ConstantName")
+    public static final Map<String, Command> commands = Map.ofEntries(//
+            entry("upload", (argv, out, model) -> {
                 String response = "UPLOAD?";
                 for (String arg : argv)
                     response += " " + arg;
@@ -65,7 +60,7 @@ public final class Worker implements Runnable {
                 synchronized (out) {
                     if (Worker.commands.containsKey(command)) {
                         log.debug("(" + id + ") task: " + command);
-                        Worker.commands.get(command).run(Arrays.copyOfRange(argv, 2, argv.length), out, this.model);
+                        Worker.commands.get(command).execute(Arrays.copyOfRange(argv, 2, argv.length), out, this.model);
                     } else {
                         if (!command.equals("help")) {
                             log.warn("(" + id + ") request not available: " + command);

@@ -11,7 +11,10 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.Arrays;
 import java.util.Map;
+
+import static java.util.Map.entry;
 
 @SuppressWarnings({"checkstyle:VisibilityModifier", "checkstyle:MagicNumber"})
 public final class Session implements Runnable {
@@ -23,6 +26,64 @@ public final class Session implements Runnable {
     private Map<Integer, PrintWriter> replies;
     private final FileShare model;
     private String loggedIn;
+
+    private Map<String, Filter> filters = Map.ofEntries(//
+            entry("login", (argv, out) -> {
+                String response = null;
+                try {
+                    this.login(argv[0], argv[1]);
+                    log.info(argv[1] + " logged in");
+                    response = "Logged in as " + argv[0];
+                } catch (AuthenticationException e) {
+                    log.error(this.id + ": " + e.getMessage());
+                    response = "Error: " + e.getMessage();
+                } catch (IndexOutOfBoundsException e) {
+                    log.error(this.id + ": wrong number of arguments");
+                    response = "Error: wrong number of arguments";
+                } finally {
+                    synchronized (out) {
+                        out.println(response);
+                        out.flush();
+                    }
+                }
+            }), entry("logout", (argv, out) -> {
+                String response;
+                if (this.loggedIn != null) {
+                    log.info("Logged Out");
+                    response = "Logged out";
+                } else {
+                    log.error(this.id + ": Not logged in");
+                    response = "Error: Not logged in";
+                }
+                synchronized (out) {
+                    out.println(response);
+                    out.flush();
+                }
+            }), entry("register", (argv, out) -> {
+                String response = "REGISTER?";
+                for (String arg : argv)
+                    response += " " + arg;
+                synchronized (out) {
+                    out.println(response);
+                    out.flush();
+                }
+            }), entry("help", (argv, out) -> {
+                String response = "List of Available Commands:";
+
+                for (String cmd : this.filters.keySet()) {
+                    response += " " + cmd + ";";
+                }
+
+                for (String cmd : Worker.commands.keySet()) {
+                    response += " " + cmd + ";";
+                }
+
+                synchronized (out) {
+                    out.println(response);
+                    out.flush();
+                }
+            }) //
+    );
 
     public Session(final int id, final Socket socket, final BoundedBuffer<String> requests,
             final Map<Integer, PrintWriter> replies, final FileShare model) {
@@ -41,71 +102,43 @@ public final class Session implements Runnable {
 
         try {
             BufferedReader in = new BufferedReader(new InputStreamReader(this.socket.getInputStream()));
+            PrintWriter out = new PrintWriter(this.socket.getOutputStream());
 
             synchronized (this.replies) {
-                this.replies.put(this.id, new PrintWriter(this.socket.getOutputStream()));
+                this.replies.put(this.id, out);
             }
 
             String message;
             while ((message = in.readLine()) != null && !message.equals("quit")) {
+                String[] argv = message.trim().split("\\s+");
+                String command = argv[0].toLowerCase();
 
-                String[] split = message.split("\\s+");
-
-                if (split[0].toLowerCase().equals("login")) {
-
-                    PrintWriter p = this.replies.get(this.id);
-                    log.trace("(" + this.id + ") request: login");
-
-                    if (split.length != 3) {
-                        log.error(this.id + ": Not enough arguments");
-                        p.println("Error: Not enough arguments");
-                        p.flush();
-                        continue;
-                    }
-
-                    try {
-                        this.login(split[0], split[1]);
-                        p.println("Logged in as " + split[1]);
-                        log.info(split[1] + " logged in");
-                    } catch (Exception e) {
-                        p.println("Error: " + e.getMessage());
-                        log.error(this.id + ": " + e.getMessage());
-                    } finally {
-                        p.flush();
-                        continue;
-                    }
-                }
-
-                if (split[0].toLowerCase().equals("logout")) {
-
-                    PrintWriter p = this.replies.get(this.id);
-                    log.trace("(" + this.id + ") request: logout");
-
-                    if (this.loggedIn != null) {
-                        log.info("Logged Out");
-                        p.println("Logged out");
-                    } else {
-                        log.error(this.id + ": Not logged in");
-                        p.println("Error: Not logged in");
-                    }
-
-                    p.flush();
-                    this.logout();
-                    continue;
-
-                }
-
-                try {
+                if (this.filters.containsKey(command)) {
                     log.trace("(" + this.id + ") request: " + message);
-                    this.requests.add(this.id + " " + message);
-                } catch (InterruptedException e) {
-                    PrintWriter out = this.replies.get(this.id);
-                    synchronized (out) {
-                        out.println("ERROR: Couldn't add your request (" + message + ")");
-                        out.flush();
+                    this.filters.get(command).execute(Arrays.copyOfRange(argv, 1, argv.length), out);
+                } else if (Worker.commands.containsKey(command)) {
+                    try {
+                        log.trace("(" + this.id + ") request: " + message);
+                        if (this.loggedIn != null) {
+                            this.requests.add(this.id + " " + message);
+                        } else {
+                            synchronized (out) {
+                                log.info("Request while not logged in");
+                                out.println("ERROR: You need to be logged in");
+                                out.flush();
+                            }
+                        }
+                    } catch (InterruptedException e) {
+                        synchronized (out) {
+                            out.println("ERROR: Couldn't add your request (" + message + ")");
+                            out.flush();
+                        }
+                        log.error(this.id + ": " + e.getMessage());
+                        e.printStackTrace();
                     }
-                    log.error(this.id + ": " + e.getMessage());
-                    e.printStackTrace();
+                } else {
+                    log.error("Not a valid command: " + message);
+                    this.filters.get("help").execute(Arrays.copyOfRange(argv, 1, argv.length), out);
                 }
             }
 
