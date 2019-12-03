@@ -56,7 +56,7 @@ public final class Worker implements Runnable {
     public void run() {
         while (true) {
             try {
-                String[] argv = this.requests.get().split(" ");
+                String[] argv = this.requests.get().split("\\s+");
                 int id = Integer.parseInt(argv[0]);
                 @SuppressWarnings("checkstyle:AvoidInlineConditionals")
                 String command = argv.length >= 2 ? argv[1].toLowerCase() : "HELP";

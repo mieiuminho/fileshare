@@ -49,7 +49,7 @@ public final class Session implements Runnable {
             String message;
             while ((message = in.readLine()) != null && !message.equals("quit")) {
 
-                String[] split = message.split(" ");
+                String[] split = message.split("\\s+");
 
                 if (split[0].toLowerCase().equals("login")) {
 
