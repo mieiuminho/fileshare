@@ -15,7 +15,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
 public final class Server {
     private static final int PORT = Integer.parseInt(System.getenv("FILESHARE_SERVER_PORT"));
     private static final int N_WORKERS = 5;

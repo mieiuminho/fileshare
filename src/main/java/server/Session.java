@@ -5,7 +5,6 @@ import model.FileShare;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import util.BoundedBuffer;
-import view.Terminal;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -49,6 +48,53 @@ public final class Session implements Runnable {
 
             String message;
             while ((message = in.readLine()) != null && !message.equals("quit")) {
+
+                String[] split = message.split(" ");
+
+                if (split[0].toLowerCase().equals("login")) {
+
+                    PrintWriter p = this.replies.get(this.id);
+                    log.trace("(" + this.id + ") request: login");
+
+                    if (split.length != 3) {
+                        log.error(this.id + ": Not enough arguments");
+                        p.println("Error: Not enough arguments");
+                        p.flush();
+                        continue;
+                    }
+
+                    try {
+                        this.login(split[0], split[1]);
+                        p.println("Logged in as " + split[1]);
+                        log.info(split[1] + " logged in");
+                    } catch (Exception e) {
+                        p.println("Error: " + e.getMessage());
+                        log.error(this.id + ": " + e.getMessage());
+                    } finally {
+                        p.flush();
+                        continue;
+                    }
+                }
+
+                if (split[0].toLowerCase().equals("logout")) {
+
+                    PrintWriter p = this.replies.get(this.id);
+                    log.trace("(" + this.id + ") request: logout");
+
+                    if (this.loggedIn != null) {
+                        log.info("Logged Out");
+                        p.println("Logged out");
+                    } else {
+                        log.error(this.id + ": Not logged in");
+                        p.println("Error: Not logged in");
+                    }
+
+                    p.flush();
+                    this.logout();
+                    continue;
+
+                }
+
                 try {
                     log.trace("(" + this.id + ") request: " + message);
                     this.requests.add(this.id + " " + message);
@@ -77,13 +123,9 @@ public final class Session implements Runnable {
         }
     }
 
-    private void login(final String username, final String password) {
-        try {
-            this.model.login(username, password);
-            this.loggedIn = username;
-        } catch (AuthenticationException exception) {
-            Terminal.error(exception.toString());
-        }
+    private void login(final String username, final String password) throws AuthenticationException {
+        this.model.login(username, password);
+        this.loggedIn = username;
     }
 
     private void logout() {

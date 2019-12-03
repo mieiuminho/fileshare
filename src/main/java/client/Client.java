@@ -9,7 +9,6 @@ import java.util.List;
 import util.Parse;
 import view.Terminal;
 
-
 public final class Client {
     private static final String HOSTNAME = System.getenv("FILESHARE_SERVER_HOSTNAME");
     private static final int PORT = Integer.parseInt(System.getenv("FILESHARE_SERVER_PORT"));

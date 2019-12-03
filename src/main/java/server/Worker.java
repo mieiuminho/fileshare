@@ -24,12 +24,6 @@ public final class Worker implements Runnable {
                     response += " " + arg;
                 out.println(response);
                 out.flush();
-            }), entry("login", (argv, out, model) -> {
-                String response = "LOGIN?";
-                for (String arg : argv)
-                    response += " " + arg;
-                out.println(response);
-                out.flush();
             }), entry("upload", (argv, out, model) -> {
                 String response = "UPLOAD?";
                 for (String arg : argv)
