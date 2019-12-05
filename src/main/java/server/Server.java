@@ -70,7 +70,7 @@ public final class Server {
 
     public static void welcome() {
         Terminal.clear();
-        List<String> logo = Parse.read(Server.class.getResource("../art/server.ascii").toString().split(":")[1]);
+        List<String> logo = Parse.readFile(Server.class.getResource("../art/server.ascii").toString().split(":")[1]);
 
         Terminal.show(logo);
     }

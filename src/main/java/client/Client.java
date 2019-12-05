@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.List;
+
 import util.Parse;
 import view.Terminal;
 
@@ -41,7 +42,22 @@ public final class Client {
             while ((message = input.readLine()) != null && !message.equals("quit")) {
                 out.println(message);
                 out.flush();
-                System.out.println(in.readLine());
+                String response = in.readLine();
+                String[] content = response.split(":");
+                if (content.length == 2) {
+                    switch (content[0].toUpperCase()) {
+                        case "ERROR":
+                            Terminal.error(content[1]);
+                            break;
+                        case "RESPONSE":
+                            Terminal.response(content[1]);
+                            break;
+                        default:
+                            Terminal.response(content[0], content[1]);
+                    }
+                } else {
+                    Terminal.response(content[0]);
+                }
                 System.out.print("> ");
             }
 
@@ -56,7 +72,7 @@ public final class Client {
 
     public static void welcome() {
         Terminal.clear();
-        List<String> logo = Parse.read(Client.class.getResource("../art/logo.ascii").toString().split(":")[1]);
+        List<String> logo = Parse.readFile(Client.class.getResource("../art/logo.ascii").toString().split(":")[1]);
 
         Terminal.show(logo);
     }

@@ -18,7 +18,7 @@ public final class Parse {
      * @param file from where should read
      * @return List of Strings
      */
-    public static List<String> read(final String file) {
+    public static List<String> readFile(final String file) {
         List<String> linhas = new ArrayList<>();
         BufferedReader inFile;
         String linha;

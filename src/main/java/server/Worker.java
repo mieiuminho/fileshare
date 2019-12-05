@@ -20,19 +20,19 @@ public final class Worker implements Runnable {
     @SuppressWarnings("checkstyle:ConstantName")
     public static final Map<String, Command> commands = Map.ofEntries(//
             entry("upload", (argv, out, model) -> {
-                String response = "UPLOAD?";
+                String response = "RESPONSE: UPLOAD?";
                 for (String arg : argv)
                     response += " " + arg;
                 out.println(response);
                 out.flush();
             }), entry("download", (argv, out, model) -> {
-                String response = "DOWNLOAD?";
+                String response = "RESPONSE: DOWNLOAD?";
                 for (String arg : argv)
                     response += " " + arg;
                 out.println(response);
                 out.flush();
             }), entry("search", (argv, out, model) -> {
-                String response = "SEARCH?";
+                String response = "RESPONSE: SEARCH?";
                 for (String arg : argv)
                     response += " " + arg;
                 out.println(response);

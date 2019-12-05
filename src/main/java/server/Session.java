@@ -33,13 +33,13 @@ public final class Session implements Runnable {
                 try {
                     this.login(argv[0], argv[1]);
                     log.info(argv[1] + " logged in");
-                    response = "Logged in as " + argv[0];
+                    response = "RESPONSE: Logged in as " + argv[0];
                 } catch (AuthenticationException e) {
                     log.error(this.id + ": " + e.getMessage());
-                    response = "Error: " + e.getMessage();
+                    response = "ERROR: " + e.getMessage();
                 } catch (IndexOutOfBoundsException e) {
                     log.error(this.id + ": wrong number of arguments");
-                    response = "Error: wrong number of arguments";
+                    response = "ERROR: wrong number of arguments";
                 } finally {
                     synchronized (out) {
                         out.println(response);
@@ -50,17 +50,17 @@ public final class Session implements Runnable {
                 String response;
                 if (this.loggedIn != null) {
                     log.info("Logged Out");
-                    response = "Logged out";
+                    response = "RESPONSE: Logged out";
                 } else {
                     log.error(this.id + ": Not logged in");
-                    response = "Error: Not logged in";
+                    response = "ERROR: Not logged in";
                 }
                 synchronized (out) {
                     out.println(response);
                     out.flush();
                 }
             }), entry("register", (argv, out) -> {
-                String response = "REGISTER?";
+                String response = "RESPONSE: REGISTER?";
                 for (String arg : argv)
                     response += " " + arg;
                 synchronized (out) {

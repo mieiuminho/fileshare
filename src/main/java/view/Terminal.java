@@ -22,10 +22,25 @@ public final class Terminal {
     }
 
     public static void error(final String error) {
-        System.out.println(Color.ANSI_RED + "\nError: " + Color.ANSI_RESET + error);
+        System.out.println(Color.ANSI_RED + "Error: " + Color.ANSI_RESET + error);
     }
 
     public static void info(final String info) {
         System.out.println(Color.ANSI_BLUE + "$> " + Color.ANSI_RESET + info);
+    }
+
+    public static void response(final String message) {
+        String[] lines = message.split(";");
+        for (String line : lines) {
+            System.out.println(Color.ANSI_GREEN + line + Color.ANSI_RESET);
+        }
+    }
+
+    public static void response(final String title, final String content) {
+        System.out.println(Color.ANSI_BLUE + title + Color.ANSI_RESET);
+        String[] lines = content.split(";");
+        for (String line : lines) {
+            System.out.println(line);
+        }
     }
 }
