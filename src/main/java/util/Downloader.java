@@ -2,9 +2,11 @@ package util;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 
 public final class Downloader {
@@ -35,10 +37,13 @@ public final class Downloader {
         }
     }
 
-    public static void toFile(final String path, final byte[] b) {
+    public static void toFile(final String path, final int offset, final byte[] b) {
+        Path p = Paths.get(path);
         try {
-            Path p = Paths.get(path);
-            Files.write(p, b, StandardOpenOption.APPEND, StandardOpenOption.CREATE);
+            FileChannel fch = FileChannel.open(p, StandardOpenOption.WRITE, StandardOpenOption.CREATE);
+            fch.write(ByteBuffer.wrap(b), offset);
+            fch.close();
+
         } catch (Exception e) {
             e.printStackTrace();
         }
