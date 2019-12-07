@@ -42,14 +42,14 @@ public final class Client {
             while ((message = input.readLine()) != null && !message.equals("quit")) {
                 out.println(message);
                 out.flush();
-                String response = in.readLine();
-                String[] content = response.split(":");
+                String reply = in.readLine();
+                String[] content = reply.split(":");
                 if (content.length == 2) {
                     switch (content[0].toUpperCase()) {
                         case "ERROR":
                             Terminal.error(content[1]);
                             break;
-                        case "RESPONSE":
+                        case "REPLY":
                             Terminal.response(content[1]);
                             break;
                         default:

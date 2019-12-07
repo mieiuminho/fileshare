@@ -61,14 +61,14 @@ public final class Song {
 
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("Song ID: " + this.id + "\n");
-        sb.append("Title: " + this.title + "\n");
-        sb.append("Artist: " + this.artist + "\n");
-        sb.append("Release Year: " + this.year + "\n");
-        sb.append("Number of Downloads: " + this.numDownloads + "\n");
-        sb.append("TAGS\n");
+        sb.append("Song ID: " + this.id + "-");
+        sb.append("Title: " + this.title + "-");
+        sb.append("Artist: " + this.artist + "-");
+        sb.append("Release Year: " + this.year + "-");
+        sb.append("Number of Downloads: " + this.numDownloads + "-");
+        sb.append("TAGS-");
         for (String s : this.tags) {
-            sb.append("\t" + s + "\n");
+            sb.append("\t" + s + "-");
         }
         return sb.toString();
     }

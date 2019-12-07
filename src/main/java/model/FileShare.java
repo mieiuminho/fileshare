@@ -38,6 +38,10 @@ public final class FileShare {
         this.songCounter = 0;
     }
 
+    public String getSongDir() {
+        return FileShare.SONGDIR;
+    }
+
     public void registerUser(final String username, final String password) throws DuplicateUserException {
         synchronized (this.users) {
             if (this.users.containsKey(username)) {
@@ -87,6 +91,15 @@ public final class FileShare {
         }
         File file = new File(SONGDIR + this.songs.get(id).getTitle());
         return file.length();
+    }
+
+    public int chunks(final int id) throws InexistentSongException {
+        long fileSize = sizeFile(id);
+        return (int) (fileSize / MAXSIZE) + 1;
+    }
+
+    public int getMaxSize() {
+        return FileShare.MAXSIZE;
     }
 
     public byte[] download(final int id, final int offset) throws InexistentSongException, InterruptedException {

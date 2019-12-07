@@ -1,6 +1,7 @@
 package server;
 
 import exceptions.AuthenticationException;
+import exceptions.DuplicateUserException;
 import model.FileShare;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -24,7 +25,7 @@ public final class Session implements Runnable {
     private final Socket socket;
     private BoundedBuffer<String> requests;
     private Map<Integer, PrintWriter> replies;
-    private final FileShare model;
+    private FileShare model;
     private String loggedIn;
 
     private Map<String, Filter> filters = Map.ofEntries(//
@@ -33,7 +34,7 @@ public final class Session implements Runnable {
                 try {
                     this.login(argv[0], argv[1]);
                     log.info(argv[1] + " logged in");
-                    response = "RESPONSE: Logged in as " + argv[0];
+                    response = "REPLY: Logged in as " + argv[0];
                 } catch (AuthenticationException e) {
                     log.error(this.id + ": " + e.getMessage());
                     response = "ERROR: " + e.getMessage();
@@ -50,7 +51,7 @@ public final class Session implements Runnable {
                 String response;
                 if (this.loggedIn != null) {
                     log.info("Logged Out");
-                    response = "RESPONSE: Logged out";
+                    response = "REPLY: Logged out";
                 } else {
                     log.error(this.id + ": Not logged in");
                     response = "ERROR: Not logged in";
@@ -60,12 +61,22 @@ public final class Session implements Runnable {
                     out.flush();
                 }
             }), entry("register", (argv, out) -> {
-                String response = "RESPONSE: REGISTER?";
-                for (String arg : argv)
-                    response += " " + arg;
-                synchronized (out) {
-                    out.println(response);
-                    out.flush();
+                String response = null;
+                try {
+                    model.registerUser(argv[0], argv[1]);
+                    log.info(argv[1] + " registered as a user");
+                    response = "REPLY: User registered";
+                } catch (DuplicateUserException e) {
+                    log.error(this.id + ": " + e.getMessage());
+                    response = "ERROR: " + e.getMessage();
+                } catch (ArrayIndexOutOfBoundsException e) {
+                    log.error(this.id + ": wrong number of arguments");
+                    response = "ERROR: wrong number of arguments";
+                } finally {
+                    synchronized (out) {
+                        out.println(response);
+                        out.flush();
+                    }
                 }
             }), entry("help", (argv, out) -> {
                 String response = "List of Available Commands:";
