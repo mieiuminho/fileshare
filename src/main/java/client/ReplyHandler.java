@@ -7,7 +7,7 @@ import java.io.BufferedReader;
 public final class ReplyHandler implements Runnable {
 
     private BufferedReader in;
-    private boolean stopFlag;
+    private volatile boolean stopFlag;
 
     public ReplyHandler(final BufferedReader in) {
         this.in = in;
@@ -18,6 +18,7 @@ public final class ReplyHandler implements Runnable {
         this.stopFlag = true;
     }
 
+    @Override
     public void run() {
         try {
             while (!stopFlag) {

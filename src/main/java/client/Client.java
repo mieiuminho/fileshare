@@ -15,6 +15,7 @@ public final class Client {
     private static final int PORT = Integer.parseInt(System.getenv("FILESHARE_SERVER_PORT"));
 
     private Socket socket;
+    private ReplyHandler replyHandler;
 
     public Client() {
     }
@@ -37,8 +38,8 @@ public final class Client {
             BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
 
             String message;
-            ReplyHandler rh = new ReplyHandler(in);
-            new Thread(rh).start();
+            this.replyHandler = new ReplyHandler(in);
+            new Thread(this.replyHandler).start();
 
             System.out.print("> ");
             while ((message = input.readLine()) != null && !message.equals("quit")) {
@@ -47,10 +48,10 @@ public final class Client {
                 System.out.print("> ");
             }
 
-            rh.stop();
-            socket.shutdownOutput();
-            socket.shutdownInput();
-            socket.close();
+            this.replyHandler.stop();
+            this.socket.shutdownOutput();
+            this.socket.shutdownInput();
+            this.socket.close();
 
         } catch (IOException e) {
             e.printStackTrace();
