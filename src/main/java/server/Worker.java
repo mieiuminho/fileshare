@@ -24,56 +24,6 @@ public final class Worker implements Runnable {
 
     private static Logger log = LogManager.getLogger(Worker.class);
 
-    @SuppressWarnings("checkstyle:ConstantName")
-    public static final Map<String, Command> commands = Map.ofEntries(//
-            entry("upload", Worker.upload), //
-            entry("download", Worker.download), //
-            entry("search", Worker.search), //
-            entry("data:", Worker.data) //
-    );
-
-    public Worker(final BoundedBuffer<String> requests, final Map<Integer, PrintWriter> replies,
-            final FileShare model) {
-        this.requests = requests;
-        this.replies = replies;
-        this.model = model;
-    }
-
-    @Override
-    public void run() {
-        while (true) {
-            try {
-                String[] argv = this.requests.get().split("\\s+");
-                int id = Integer.parseInt(argv[0]);
-                @SuppressWarnings("checkstyle:AvoidInlineConditionals")
-                String command = argv.length >= 2 ? argv[1].toLowerCase() : "HELP";
-                PrintWriter out = this.replies.get(id);
-
-                synchronized (out) {
-                    if (Worker.commands.containsKey(command)) {
-                        log.debug("(" + id + ") task: " + command);
-                        Worker.commands.get(command).execute(Arrays.copyOfRange(argv, 2, argv.length), out, this.model);
-                    } else {
-                        if (!command.equals("help")) {
-                            log.warn("(" + id + ") request not available: " + command);
-                        } else
-                            log.debug("(" + id + ") request for help");
-                        String listOfCommands = "List of Available Commands:";
-
-                        for (String cmd : Worker.commands.keySet()) {
-                            listOfCommands += " " + cmd + ";";
-                        }
-
-                        out.println(listOfCommands);
-                        out.flush();
-                    }
-                }
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
     @SuppressWarnings("checkstyle:MagicNumber")
     private static Command upload = (argv, out, model) -> {
         String reply = null;
@@ -166,5 +116,55 @@ public final class Worker implements Runnable {
             }
         }
     };
+
+    @SuppressWarnings("checkstyle:ConstantName")
+    public static final Map<String, Command> commands = Map.ofEntries(//
+            entry("upload", Worker.upload), //
+            entry("download", Worker.download), //
+            entry("search", Worker.search), //
+            entry("data:", Worker.data) //
+    );
+
+    public Worker(final BoundedBuffer<String> requests, final Map<Integer, PrintWriter> replies,
+            final FileShare model) {
+        this.requests = requests;
+        this.replies = replies;
+        this.model = model;
+    }
+
+    @Override
+    public void run() {
+        while (true) {
+            try {
+                String[] argv = this.requests.get().split("\\s+");
+                int id = Integer.parseInt(argv[0]);
+                @SuppressWarnings("checkstyle:AvoidInlineConditionals")
+                String command = argv.length >= 2 ? argv[1].toLowerCase() : "HELP";
+                PrintWriter out = this.replies.get(id);
+
+                synchronized (out) {
+                    if (Worker.commands.containsKey(command)) {
+                        log.debug("(" + id + ") task: " + command);
+                        Worker.commands.get(command).execute(Arrays.copyOfRange(argv, 2, argv.length), out, this.model);
+                    } else {
+                        if (!command.equals("help")) {
+                            log.warn("(" + id + ") request not available: " + command);
+                        } else
+                            log.debug("(" + id + ") request for help");
+                        String listOfCommands = "List of Available Commands:";
+
+                        for (String cmd : Worker.commands.keySet()) {
+                            listOfCommands += " " + cmd + ";";
+                        }
+
+                        out.println(listOfCommands);
+                        out.flush();
+                    }
+                }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
 }
