@@ -26,10 +26,11 @@ public final class Worker implements Runnable {
 
     @SuppressWarnings("checkstyle:ConstantName")
     public static final Map<String, Command> commands = Map.ofEntries(//
-            entry("upload", Worker.upload),
-            entry("download", Worker.download),
-            entry("search", Worker.search),
-            entry("data:", Worker.data));
+            entry("upload", Worker.upload), //
+            entry("download", Worker.download), //
+            entry("search", Worker.search), //
+            entry("data:", Worker.data) //
+    );
 
     public Worker(final BoundedBuffer<String> requests, final Map<Integer, PrintWriter> replies,
             final FileShare model) {
@@ -72,6 +73,7 @@ public final class Worker implements Runnable {
             }
         }
     }
+
     @SuppressWarnings("checkstyle:MagicNumber")
     private static Command upload = (argv, out, model) -> {
         String reply = null;
