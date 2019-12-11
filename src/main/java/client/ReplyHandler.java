@@ -8,10 +8,12 @@ public final class ReplyHandler implements Runnable {
 
     private BufferedReader in;
     private volatile boolean stopFlag;
+    private ClientWorker cw;
 
-    public ReplyHandler(final BufferedReader in) {
+    public ReplyHandler(final BufferedReader in, final ClientWorker cw) {
         this.in = in;
         this.stopFlag = false;
+        this.cw = cw;
     }
 
     public void stop() {
@@ -33,7 +35,7 @@ public final class ReplyHandler implements Runnable {
                             Terminal.response(content[1]);
                             break;
                         default:
-                            Terminal.response(content[0], content[1]);
+                            this.cw.run(reply);
                     }
                 } else {
                     Terminal.response(content[0]);

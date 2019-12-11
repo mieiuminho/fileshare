@@ -129,7 +129,8 @@ public final class Session implements Runnable {
                     this.filters.get(command).execute(Arrays.copyOfRange(argv, 1, argv.length), out);
                 } else if (Worker.commands.containsKey(command)) {
                     try {
-                        log.trace("(" + this.id + ") request: " + message);
+                        if (!command.equals("data:"))
+                            log.trace("(" + this.id + ") request: " + message);
                         if (this.loggedIn != null) {
                             this.requests.add(this.id + " " + message);
                         } else {

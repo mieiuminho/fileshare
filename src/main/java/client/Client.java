@@ -13,6 +13,8 @@ import view.Terminal;
 public final class Client {
     private static final String HOSTNAME = System.getenv("FILESHARE_SERVER_HOSTNAME");
     private static final int PORT = Integer.parseInt(System.getenv("FILESHARE_SERVER_PORT"));
+    private static final int MEGA = 1048576;
+    private static final int MAXSIZE = MEGA;
 
     private Socket socket;
     private ReplyHandler replyHandler;
@@ -23,6 +25,10 @@ public final class Client {
     public static void main(final String[] args) {
         Client.welcome();
         new Client().startUp();
+    }
+
+    public static int getMAXSIZE() {
+        return Client.MAXSIZE;
     }
 
     @SuppressWarnings("checkstyle:InnerAssignment")
@@ -38,7 +44,10 @@ public final class Client {
             BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
 
             String message;
-            this.replyHandler = new ReplyHandler(in);
+
+            ClientWorker cw = new ClientWorker(out);
+
+            this.replyHandler = new ReplyHandler(in, cw);
             new Thread(this.replyHandler).start();
 
             System.out.print("> ");

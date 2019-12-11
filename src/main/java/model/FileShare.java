@@ -7,6 +7,8 @@ import exceptions.InexistentSongException;
 import util.Downloader;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
 import java.util.HashMap;
@@ -89,7 +91,7 @@ public final class FileShare {
                 throw new InexistentSongException();
             }
         }
-        File file = new File(SONGDIR + this.songs.get(id).getTitle());
+        File file = new File(SONGDIR + id + ".mp3");
         return file.length();
     }
 
@@ -102,7 +104,8 @@ public final class FileShare {
         return FileShare.MAXSIZE;
     }
 
-    public byte[] download(final int id, final int offset) throws InexistentSongException, InterruptedException {
+    public byte[] download(final int id, final int offset)
+            throws InexistentSongException, InterruptedException, FileNotFoundException, IOException {
 
         while (this.downloading == MAXDOWN) {
             this.isCrowded.await();
@@ -128,7 +131,7 @@ public final class FileShare {
             this.lock.unlock();
         }
 
-        String buffer = SONGDIR + this.songs.get(id).getTitle();
+        String buffer = SONGDIR + id + ".mp3";
 
         return Downloader.toArray(buffer, offset, MAXSIZE);
     }
@@ -136,7 +139,7 @@ public final class FileShare {
     public List<String> search(final String tag) {
         List<String> r = new ArrayList<>();
 
-        synchronized (this.songs) {
+        synchronized (this.songs.values()) {
             for (Song s : this.songs.values()) {
                 if (s.filter(tag))
                     r.add(s.toString());

@@ -42,7 +42,6 @@ public final class Song {
     }
 
     public boolean filter(final String tag) {
-
         return this.tags.contains(tag);
     }
 
@@ -61,14 +60,14 @@ public final class Song {
 
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("Song ID: " + this.id + "-");
-        sb.append("Title: " + this.title + "-");
-        sb.append("Artist: " + this.artist + "-");
-        sb.append("Release Year: " + this.year + "-");
-        sb.append("Number of Downloads: " + this.numDownloads + "-");
+        sb.append("Song ID-" + this.id + "-");
+        sb.append("Title-" + this.title + "-");
+        sb.append("Artist-" + this.artist + "-");
+        sb.append("Release Year-" + this.year + "-");
+        sb.append("Number of Downloads-" + this.numDownloads + "-");
         sb.append("TAGS-");
         for (String s : this.tags) {
-            sb.append("\t" + s + "-");
+            sb.append(s + "-");
         }
         return sb.toString();
     }

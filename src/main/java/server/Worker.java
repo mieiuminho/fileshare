@@ -8,6 +8,8 @@ import org.apache.logging.log4j.Logger;
 import util.BoundedBuffer;
 import util.Downloader;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +26,18 @@ public final class Worker implements Runnable {
 
     private static Logger log = LogManager.getLogger(Worker.class);
 
+    private void notifyUsers(final String title, final String author) {
+        String notification = "A new song is available. " + title + " by " + author
+                + ". It may take a few moments for the song to become available to download";
+
+        for (PrintWriter out : this.replies.values()) {
+            synchronized (out) {
+                out.println(notification);
+                out.flush();
+            }
+        }
+    }
+
     @SuppressWarnings("checkstyle:MagicNumber")
     private static Command upload = (argv, out, model) -> {
         String reply = null;
@@ -38,11 +52,11 @@ public final class Worker implements Runnable {
                 out.println("REQUEST: " + id + " " + argv[3]);
                 out.flush();
             }
-            reply = ("REPLY: Began upload of the file (" + id + ")");
+            reply = "REPLY: Began upload of the file (" + id + ")";
         } catch (ArrayIndexOutOfBoundsException e) {
-            reply = ("ERROR: wrong number of arguments");
+            reply = "ERROR: wrong number of arguments";
         } catch (DuplicateSongException e) {
-            reply = ("ERROR: This file is already present in the system");
+            reply = "ERROR: This file is already present in the system";
         } finally {
             synchronized (out) {
                 out.println(reply);
@@ -69,13 +83,17 @@ public final class Worker implements Runnable {
                     out.flush();
                 }
             }
-            reply = ("REPLY: The download of " + fileID + " has finished");
+            reply = "REPLY: The download of " + fileID + " has finished";
         } catch (InexistentSongException e) {
-            reply = ("ERROR: Invalid file ID");
+            reply = "ERROR: Invalid file ID";
         } catch (InterruptedException e) {
-            reply = ("ERROR: The download was interrupted. The file may not be available at this time");
+            reply = "ERROR: The download was interrupted. The file may not be available at this time";
         } catch (ArrayIndexOutOfBoundsException e) {
-            reply = ("ERROR: wrong number of arguments");
+            reply = "ERROR: wrong number of arguments";
+        } catch (FileNotFoundException e) {
+            reply = "ERROR: This file is currently not available.";
+        } catch (IOException e) {
+            reply = "ERROR: The download was interrupted unexpectedly";
         } finally {
             synchronized (out) {
                 out.println(reply);
@@ -90,11 +108,11 @@ public final class Worker implements Runnable {
             List<String> results = model.search(argv[0]);
             StringBuilder sb = new StringBuilder();
             for (String s : results) {
-                sb.append(s + " ;");
+                sb.append(s + ";");
             }
-            reply = ("REPLY:" + " " + sb.toString());
+            reply = "REPLY:" + sb.toString();
         } catch (ArrayIndexOutOfBoundsException e) {
-            reply = ("ERROR: wrong number of arguments");
+            reply = "ERROR: wrong number of arguments";
         } finally {
             synchronized (out) {
                 out.println(reply);
@@ -108,10 +126,15 @@ public final class Worker implements Runnable {
             String fileID = argv[0];
             int offset = Integer.parseInt(argv[1]);
             byte[] b = Base64.getDecoder().decode(argv[2]);
-            Downloader.toFile(model.getSongDir() + fileID, offset, b);
+            Downloader.toFile(model.getSongDir() + fileID + ".mp3", offset, b);
         } catch (ArrayIndexOutOfBoundsException e) {
             synchronized (out) {
                 out.println("ERROR: wrong number of arguments");
+                out.flush();
+            }
+        } catch (IOException e) {
+            synchronized (out) {
+                out.println("ERROR: The upload was interrupted unexpectedly");
                 out.flush();
             }
         }
