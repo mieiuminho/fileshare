@@ -18,7 +18,7 @@ import util.Parse;
 import view.Terminal;
 
 public final class Server {
-    private static String HOSTNAME = System.getenv("FILESHARE_SERVER_HOSTNAME");
+    private static final String HOSTNAME = System.getenv("FILESHARE_SERVER_HOSTNAME");
     private static final int PORT = Integer.parseInt(System.getenv("FILESHARE_SERVER_PORT"));
     private static final int N_WORKERS = 5;
     private static final int REQUESTS_MAX_SIZE = 10;

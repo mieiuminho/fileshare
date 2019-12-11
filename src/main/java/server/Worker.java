@@ -110,7 +110,7 @@ public final class Worker implements Runnable {
             for (String s : results) {
                 sb.append(s + ";");
             }
-            reply = "REPLY:" + sb.toString();
+            reply = "REPLY: " + sb.toString();
         } catch (ArrayIndexOutOfBoundsException e) {
             reply = "ERROR: wrong number of arguments";
         } finally {

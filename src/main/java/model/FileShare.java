@@ -1,11 +1,5 @@
 package model;
 
-import exceptions.AuthenticationException;
-import exceptions.DuplicateUserException;
-import exceptions.DuplicateSongException;
-import exceptions.InexistentSongException;
-import util.Downloader;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -17,6 +11,13 @@ import java.util.ArrayList;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+
+import exceptions.AuthenticationException;
+import exceptions.DuplicateUserException;
+import exceptions.DuplicateSongException;
+import exceptions.InexistentSongException;
+
+import util.Downloader;
 
 public final class FileShare {
     private static final int MEGA = 1048576;
@@ -145,6 +146,7 @@ public final class FileShare {
                     r.add(s.toString());
             }
         }
+
         return r;
     }
 }

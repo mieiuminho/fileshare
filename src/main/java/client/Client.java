@@ -50,11 +50,11 @@ public final class Client {
             this.replyHandler = new ReplyHandler(in, cw);
             new Thread(this.replyHandler).start();
 
-            System.out.print("> ");
+            // System.out.print("> ");
             while ((message = input.readLine()) != null && !message.equals("quit")) {
                 out.println(message);
                 out.flush();
-                System.out.print("> ");
+                // System.out.print("> ");
             }
 
             this.replyHandler.stop();
