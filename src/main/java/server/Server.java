@@ -1,21 +1,24 @@
 package server;
 
-import model.FileShare;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import util.BoundedBuffer;
-import util.Parse;
-import view.Terminal;
-
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import model.FileShare;
+import util.BoundedBuffer;
+import util.Parse;
+import view.Terminal;
+
 public final class Server {
+    private static String HOSTNAME = System.getenv("FILESHARE_SERVER_HOSTNAME");
     private static final int PORT = Integer.parseInt(System.getenv("FILESHARE_SERVER_PORT"));
     private static final int N_WORKERS = 5;
     private static final int REQUESTS_MAX_SIZE = 10;
@@ -32,7 +35,7 @@ public final class Server {
         this.model = new FileShare();
     }
 
-    public static void main(final String[] args) {
+    public static void main(final String[] args) throws IOException {
         Server.welcome();
         new Server().startUp();
     }
@@ -42,7 +45,8 @@ public final class Server {
 
         // criar o servidor
         try {
-            this.socket = new ServerSocket(Server.PORT);
+            this.socket = new ServerSocket();
+            this.socket.bind(new InetSocketAddress(HOSTNAME, PORT));
             log.info("Server is up at " + this.socket.getLocalSocketAddress());
         } catch (IOException e) {
             e.printStackTrace();
