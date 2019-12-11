@@ -33,7 +33,7 @@ public final class Session implements Runnable {
                 String response = null;
                 try {
                     this.login(argv[0], argv[1]);
-                    log.info(argv[1] + " logged in");
+                    log.info("User " + argv[0] + " logged in");
                     response = "REPLY: Logged in as " + argv[0];
                 } catch (AuthenticationException e) {
                     log.error(this.id + ": " + e.getMessage());
