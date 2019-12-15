@@ -15,6 +15,12 @@
 
 ## :rocket: Getting Started
 
+Start by copying the `.env.sample` into `.env` and fill in the fields correctly.
+
+```bash
+cp .env.sample .env
+```
+
 This project uses settings configured in environment variables defined in the
 `.env` file. In order to get those properly exported is recommend to set up
 [direnv](https://direnv.net/) for a terminal based work flow and the plugin
