@@ -42,14 +42,14 @@ public final class Worker implements Runnable {
     private static Command upload = (argv, out, model) -> {
         String reply = null;
         try {
-            int year = Integer.parseInt(argv[2]);
+            int year = Integer.parseInt(argv[3]);
             List<String> tags = new ArrayList<>();
-            for (int i = 4; i < argv.length; i++) {
+            for (int i = 5; i < argv.length; i++) {
                 tags.add(argv[i]);
             }
-            int id = model.upload(argv[0], argv[1], year, tags);
+            int id = model.upload(argv[0], argv[1], argv[2], year, tags);
             synchronized (out) {
-                out.println("REQUEST: " + id + " " + argv[3]);
+                out.println("REQUEST: " + id + " " + argv[4]);
                 out.flush();
             }
             reply = "REPLY: Began upload of the file (" + id + ")";
@@ -123,10 +123,10 @@ public final class Worker implements Runnable {
 
     private static Command data = (argv, out, model) -> {
         try {
-            String fileID = argv[0];
+            int fileID = Integer.parseInt(argv[0]);
             int offset = Integer.parseInt(argv[1]);
             byte[] b = Base64.getDecoder().decode(argv[2]);
-            Downloader.toFile(model.getSongDir() + fileID + ".mp3", offset, b);
+            Downloader.toFile(model.getSongDir(fileID), offset, b);
         } catch (ArrayIndexOutOfBoundsException e) {
             synchronized (out) {
                 out.println("ERROR: wrong number of arguments");
@@ -137,15 +137,43 @@ public final class Worker implements Runnable {
                 out.println("ERROR: The upload was interrupted unexpectedly");
                 out.flush();
             }
+        } catch (InexistentSongException e) {
+            synchronized (out) {
+                out.println("ERROR: Couldn't write data");
+                out.flush();
+            }
         }
     };
+
+    private static Command notify = (argv, out, model) -> {
+        try {
+            int fileID = Integer.parseInt(argv[0]);
+            model.setAval(fileID);
+        } catch (InexistentSongException e) {
+            synchronized (out) {
+                out.println("This upload was canceled. It exceded the time limit. Please try again");
+                out.flush();
+            }
+        }
+    };
+
+    private void notifyUsers(final int id) throws InexistentSongException {
+        String n = this.model.getNotif(id);
+        for (PrintWriter p : this.replies.values()) {
+            synchronized (p) {
+                p.println(n);
+                p.flush();
+            }
+        }
+    }
 
     @SuppressWarnings("checkstyle:ConstantName")
     public static final Map<String, Command> commands = Map.ofEntries(//
             entry("upload", Worker.upload), //
             entry("download", Worker.download), //
             entry("search", Worker.search), //
-            entry("data:", Worker.data) //
+            entry("data:", Worker.data), //
+            entry("notification", Worker.notify)//
     );
 
     public Worker(final BoundedBuffer<String> requests, final Map<Integer, PrintWriter> replies,
@@ -168,6 +196,10 @@ public final class Worker implements Runnable {
                 synchronized (out) {
                     if (Worker.commands.containsKey(command)) {
                         log.debug("(" + id + ") task: " + command);
+                        if (command.equals("notification")) {
+                            int argId = Integer.parseInt(argv[2]);
+                            this.notifyUsers(argId);
+                        }
                         Worker.commands.get(command).execute(Arrays.copyOfRange(argv, 2, argv.length), out, this.model);
                     } else {
                         if (!command.equals("help")) {
@@ -184,7 +216,7 @@ public final class Worker implements Runnable {
                         out.flush();
                     }
                 }
-            } catch (InterruptedException e) {
+            } catch (InterruptedException | ArrayIndexOutOfBoundsException | InexistentSongException e) {
                 e.printStackTrace();
             }
         }

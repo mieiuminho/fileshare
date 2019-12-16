@@ -6,8 +6,11 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.Date;
+import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -22,6 +25,7 @@ public final class Server {
     private static final int PORT = Integer.parseInt(System.getenv("FILESHARE_SERVER_PORT"));
     private static final int N_WORKERS = 5;
     private static final int REQUESTS_MAX_SIZE = 10;
+    private static final long CLOCK = 1800000;
     private static Logger log = LogManager.getLogger(Server.class);
 
     private ServerSocket socket;
@@ -39,9 +43,13 @@ public final class Server {
         Server.welcome();
         new Server().startUp();
     }
-
+    @SuppressWarnings("checkstyle:magicnumber")
     public void startUp() {
         log.debug("Working Directory " + System.getProperty("user.dir"));
+
+        Timer t = new Timer();
+        TimerTask cleaner = new Cleaner(this.model);
+        t.scheduleAtFixedRate(cleaner, new Date(), Server.CLOCK);
 
         // criar o servidor
         try {

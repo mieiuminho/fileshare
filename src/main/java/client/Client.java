@@ -13,8 +13,8 @@ import view.Terminal;
 public final class Client {
     private static final String HOSTNAME = System.getenv("FILESHARE_SERVER_HOSTNAME");
     private static final int PORT = Integer.parseInt(System.getenv("FILESHARE_SERVER_PORT"));
-    private static final int MEGA = 1048576;
-    private static final int MAXSIZE = MEGA;
+    private static final int KB = 1024;
+    private static final int MAXSIZE = 100 * KB;
 
     private Socket socket;
     private ReplyHandler replyHandler;

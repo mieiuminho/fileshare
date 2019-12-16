@@ -40,6 +40,8 @@ public final class ClientWorker {
                 out.println("DATA: " + argv[0] + " " + (i * chunkSize) + " " + enc);
                 out.flush();
             }
+            out.println("NOTIFICATION " + argv[0]);
+            out.flush();
         } catch (FileNotFoundException e) {
             System.out.println("ERROR: File Not Found");
         } catch (IOException e) {

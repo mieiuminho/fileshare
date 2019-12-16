@@ -2,7 +2,6 @@ package util;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
@@ -16,8 +15,7 @@ public final class Downloader {
     private Downloader() {
     }
 
-    public static byte[] toArray(final String path, final int offset, final int size)
-            throws FileNotFoundException, IOException {
+    public static byte[] toArray(final String path, final int offset, final int size) throws IOException {
         Path p = Paths.get(path);
         FileInputStream fis = new FileInputStream(new File(path));
 

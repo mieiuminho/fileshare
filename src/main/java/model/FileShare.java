@@ -1,7 +1,6 @@
 package model;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
@@ -20,10 +19,11 @@ import exceptions.InexistentSongException;
 import util.Downloader;
 
 public final class FileShare {
-    private static final int MEGA = 1048576;
+    private static final int KB = 1024;
+    private static final int MAXSIZE = 100 * KB;
     private static final int MAXDOWN = 5;
-    private static final int MAXSIZE = MEGA;
     private static final String SONGDIR = System.getenv("FILESHARE_SERVER_DATA_DIR");
+    private static final int UPLOADTIMELIMIT = 20;
 
     private Map<String, User> users;
     private Map<Integer, Song> songs;
@@ -41,8 +41,12 @@ public final class FileShare {
         this.songCounter = 0;
     }
 
-    public String getSongDir() {
-        return FileShare.SONGDIR;
+    public String getSongDir(final int id) throws InexistentSongException {
+
+        if (!this.songs.containsKey(id)) {
+            throw new InexistentSongException();
+        }
+        return FileShare.SONGDIR + this.songs.get(id).getFileName();
     }
 
     public void registerUser(final String username, final String password) throws DuplicateUserException {
@@ -68,10 +72,10 @@ public final class FileShare {
         }
     }
 
-    public int upload(final String title, final String artist, final int year, final Collection<String> tags)
-            throws DuplicateSongException {
+    public int upload(final String fileName, final String title, final String artist, final int year,
+            final Collection<String> tags) throws DuplicateSongException {
 
-        Song newSong = new Song(title, artist, year, tags, songCounter);
+        Song newSong = new Song(songCounter, fileName, title, artist, year, FileShare.UPLOADTIMELIMIT, tags);
 
         synchronized (this.songs) {
             if (this.songs.containsKey(songCounter)) {
@@ -88,11 +92,12 @@ public final class FileShare {
 
     public long sizeFile(final int id) throws InexistentSongException {
         synchronized (this.songs) {
-            if (!this.songs.containsKey(id)) {
+            if (!this.songs.containsKey(id) || !this.songs.get(id).isAval()) {
                 throw new InexistentSongException();
             }
         }
-        File file = new File(SONGDIR + id + ".mp3");
+        String filePath = SONGDIR + this.songs.get(id).getFileName();
+        File file = new File(filePath);
         return file.length();
     }
 
@@ -106,7 +111,7 @@ public final class FileShare {
     }
 
     public byte[] download(final int id, final int offset)
-            throws InexistentSongException, InterruptedException, FileNotFoundException, IOException {
+            throws InexistentSongException, InterruptedException, IOException {
 
         while (this.downloading == MAXDOWN) {
             this.isCrowded.await();
@@ -132,9 +137,25 @@ public final class FileShare {
             this.lock.unlock();
         }
 
-        String buffer = SONGDIR + id + ".mp3";
+        String buffer = SONGDIR + this.songs.get(id).getFileName();
 
         return Downloader.toArray(buffer, offset, MAXSIZE);
+    }
+
+    public void setAval(final int id) throws InexistentSongException {
+        if (!this.songs.containsKey(id)) {
+            throw new InexistentSongException();
+        }
+
+        this.songs.get(id).setAval(true);
+    }
+
+    public String getNotif(final int id) throws InexistentSongException {
+        if (!this.songs.containsKey(id)) {
+            throw new InexistentSongException();
+        }
+        Song s = this.songs.get(id);
+        return "A new song is available. " + s.getTitle() + " by " + s.getArtist();
     }
 
     public List<String> search(final String tag) {
@@ -142,11 +163,26 @@ public final class FileShare {
 
         synchronized (this.songs.values()) {
             for (Song s : this.songs.values()) {
-                if (s.filter(tag))
+                if (s.isAval() && s.filter(tag))
                     r.add(s.toString());
             }
         }
 
         return r;
     }
+
+    public List<String> cleanup() throws InexistentSongException {
+        List<String> toBeRemoved = new ArrayList<>();
+        for (Song s : this.songs.values()) {
+            if (!s.isAval() && s.hasExpired()) {
+                String path = this.getSongDir(s.getId());
+                toBeRemoved.add(path);
+                synchronized (this.songs.values()) {
+                    this.songs.remove(s.getId());
+                }
+            }
+        }
+        return toBeRemoved;
+    }
+
 }
