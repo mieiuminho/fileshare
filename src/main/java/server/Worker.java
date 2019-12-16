@@ -26,18 +26,6 @@ public final class Worker implements Runnable {
 
     private static Logger log = LogManager.getLogger(Worker.class);
 
-    private void notifyUsers(final String title, final String author) {
-        String notification = "A new song is available. " + title + " by " + author
-                + ". It may take a few moments for the song to become available to download";
-
-        for (PrintWriter out : this.replies.values()) {
-            synchronized (out) {
-                out.println(notification);
-                out.flush();
-            }
-        }
-    }
-
     @SuppressWarnings("checkstyle:MagicNumber")
     private static Command upload = (argv, out, model) -> {
         String reply = null;
