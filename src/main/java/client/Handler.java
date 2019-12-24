@@ -1,7 +1,7 @@
-package server;
+package client;
 
 import java.io.PrintWriter;
 
-public interface Filter {
+public interface Handler {
     void execute(String[] argv, PrintWriter out);
 }

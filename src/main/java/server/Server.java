@@ -8,7 +8,6 @@ import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Timer;
-import java.util.TimerTask;
 import java.util.Date;
 import java.util.List;
 
@@ -39,17 +38,16 @@ public final class Server {
         this.model = new FileShare();
     }
 
-    public static void main(final String[] args) throws IOException {
+    public static void main(final String[] args) {
         Server.welcome();
         new Server().startUp();
     }
+
     @SuppressWarnings("checkstyle:magicnumber")
     public void startUp() {
         log.debug("Working Directory " + System.getProperty("user.dir"));
 
-        Timer t = new Timer();
-        TimerTask cleaner = new Cleaner(this.model);
-        t.scheduleAtFixedRate(cleaner, new Date(), Server.CLOCK);
+        new Timer().scheduleAtFixedRate(new Cleaner(this.model), new Date(), Server.CLOCK);
 
         // criar o servidor
         try {

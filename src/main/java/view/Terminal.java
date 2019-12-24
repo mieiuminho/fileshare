@@ -36,11 +36,18 @@ public final class Terminal {
         }
     }
 
-    public static void response(final String title, final String content) {
+    public static void response(final String title, final String[] content) {
         System.out.println(Color.ANSI_BLUE + title + Color.ANSI_RESET);
-        String[] lines = content.split(";");
-        for (String line : lines) {
+        for (String line : content) {
             System.out.println(line);
         }
     }
+
+    public static void notification(final String message) {
+        String[] lines = message.split(";");
+        for (String line : lines) {
+            System.out.println(Color.ANSI_PURPLE + line + Color.ANSI_RESET);
+        }
+    }
+
 }

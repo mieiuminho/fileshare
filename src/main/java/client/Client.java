@@ -14,7 +14,7 @@ public final class Client {
     private static final String HOSTNAME = System.getenv("FILESHARE_SERVER_HOSTNAME");
     private static final int PORT = Integer.parseInt(System.getenv("FILESHARE_SERVER_PORT"));
     private static final int KB = 1024;
-    private static final int MAXSIZE = 100 * KB;
+    private static final int MAXSIZE = 1024 * KB;
 
     private Socket socket;
     private ReplyHandler replyHandler;
@@ -45,9 +45,7 @@ public final class Client {
 
             String message;
 
-            ClientWorker cw = new ClientWorker(out);
-
-            this.replyHandler = new ReplyHandler(in, cw);
+            this.replyHandler = new ReplyHandler(in, out);
             new Thread(this.replyHandler).start();
 
             // System.out.print("> ");

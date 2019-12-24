@@ -11,7 +11,7 @@ import java.util.concurrent.locks.ReentrantLock;
 public final class Song {
 
     private int id;
-    private boolean aval;
+    private boolean available;
     private String fileName;
     private String title;
     private String artist;
@@ -24,7 +24,7 @@ public final class Song {
     public Song(final int id, final String fileName, final String title, final String artist, final int year,
             final int timeLimit, final Collection<String> c) {
         this.id = id;
-        this.aval = false;
+        this.available = false;
         this.fileName = fileName;
         this.title = title;
         this.artist = artist;
@@ -43,16 +43,16 @@ public final class Song {
         return this.title;
     }
 
-    public boolean isAval() {
-        return this.aval;
+    public boolean isAvailable() {
+        return this.available;
     }
 
     public boolean hasExpired() {
         return LocalDateTime.now().isAfter(this.timeLimit);
     }
 
-    public void setAval(final boolean b) {
-        this.aval = b;
+    public void setAvailable(final boolean b) {
+        this.available = b;
     }
 
     public String getFileName() {
@@ -88,14 +88,14 @@ public final class Song {
 
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("Song ID-" + this.id + "-");
-        sb.append("Title-" + this.title + "-");
-        sb.append("Artist-" + this.artist + "-");
-        sb.append("Release Year-" + this.year + "-");
-        sb.append("Number of Downloads-" + this.numDownloads + "-");
-        sb.append("TAGS-");
+        sb.append("ID " + this.id + " | ");
+        sb.append("TITLE " + this.title + " | ");
+        sb.append("ARTIST " + this.artist + " | ");
+        sb.append("RELEASE YEAR " + this.year + " | ");
+        sb.append("NUMBER OF DOWNLOADS " + this.numDownloads + " | ");
+        sb.append("TAGS ");
         for (String s : this.tags) {
-            sb.append(s + "-");
+            sb.append(s + " ");
         }
         return sb.toString();
     }

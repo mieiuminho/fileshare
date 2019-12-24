@@ -1,13 +1,5 @@
 package server;
 
-import exceptions.DuplicateSongException;
-import exceptions.InexistentSongException;
-import model.FileShare;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import util.BoundedBuffer;
-import util.Downloader;
-
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -17,7 +9,15 @@ import java.util.Map;
 import java.util.Base64;
 import java.util.Arrays;
 
-import static java.util.Map.entry;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import exceptions.DuplicateSongException;
+import exceptions.InexistentSongException;
+
+import model.FileShare;
+import util.BoundedBuffer;
+import util.Downloader;
 
 public final class Worker implements Runnable {
     private BoundedBuffer<String> requests;
@@ -26,8 +26,15 @@ public final class Worker implements Runnable {
 
     private static Logger log = LogManager.getLogger(Worker.class);
 
+    public Worker(final BoundedBuffer<String> requests, final Map<Integer, PrintWriter> replies,
+            final FileShare model) {
+        this.requests = requests;
+        this.replies = replies;
+        this.model = model;
+    }
+
     @SuppressWarnings("checkstyle:MagicNumber")
-    private static Command upload = (argv, out, model) -> {
+    private void upload(final String[] argv, final PrintWriter out) {
         String reply = null;
         try {
             int year = Integer.parseInt(argv[3]);
@@ -35,7 +42,7 @@ public final class Worker implements Runnable {
             for (int i = 5; i < argv.length; i++) {
                 tags.add(argv[i]);
             }
-            int id = model.upload(argv[0], argv[1], argv[2], year, tags);
+            int id = this.model.upload(argv[0], argv[1], argv[2], year, tags);
             synchronized (out) {
                 out.println("REQUEST: " + id + " " + argv[4]);
                 out.flush();
@@ -51,20 +58,20 @@ public final class Worker implements Runnable {
                 out.flush();
             }
         }
-    };
+    }
 
-    private static Command download = (argv, out, model) -> {
+    private void download(final String[] argv, final PrintWriter out) {
         String reply = null;
         try {
             int fileID = Integer.parseInt(argv[0]);
-            long chunks = model.chunks(fileID);
+            long chunks = this.model.chunks(fileID);
             synchronized (out) {
                 out.println("REPLY: Began download of " + fileID + "...");
                 out.flush();
             }
-            int chunkSize = model.getMaxSize();
+            int chunkSize = this.model.getMaxSize();
             for (int i = 0; i < chunks; i++) {
-                byte[] buf = model.download(fileID, i * chunkSize);
+                byte[] buf = this.model.download(fileID, i * chunkSize);
                 String encoded = Base64.getEncoder().encodeToString(buf);
                 synchronized (out) {
                     out.println("DATA: " + fileID + " " + (i * chunkSize) + " " + encoded);
@@ -88,33 +95,34 @@ public final class Worker implements Runnable {
                 out.flush();
             }
         }
-    };
+    }
 
-    private static Command search = (argv, out, model) -> {
+    @SuppressWarnings("checkstyle:AvoidInlineConditionals")
+    private void search(final String[] argv, final PrintWriter out) {
         String reply = null;
         try {
-            List<String> results = model.search(argv[0]);
+            List<String> results = this.model.search(argv[0]);
             StringBuilder sb = new StringBuilder();
             for (String s : results) {
-                sb.append(s + ";");
+                sb.append(s + "; ");
             }
-            reply = "REPLY: " + sb.toString();
+            reply = sb.toString().length() == 0 ? "No results for this search." : sb.toString();
         } catch (ArrayIndexOutOfBoundsException e) {
             reply = "ERROR: wrong number of arguments";
         } finally {
             synchronized (out) {
-                out.println(reply);
+                out.println("REPLY:  " + reply);
                 out.flush();
             }
         }
-    };
+    }
 
-    private static Command data = (argv, out, model) -> {
+    private void data(final String[] argv, final PrintWriter out) {
         try {
             int fileID = Integer.parseInt(argv[0]);
             int offset = Integer.parseInt(argv[1]);
             byte[] b = Base64.getDecoder().decode(argv[2]);
-            Downloader.toFile(model.getSongDir(fileID), offset, b);
+            Downloader.toFile(this.model.getSongDir(fileID), offset, b);
         } catch (ArrayIndexOutOfBoundsException e) {
             synchronized (out) {
                 out.println("ERROR: wrong number of arguments");
@@ -131,45 +139,38 @@ public final class Worker implements Runnable {
                 out.flush();
             }
         }
-    };
+    }
 
-    private static Command notify = (argv, out, model) -> {
+    private void notify(final String[] argv, final PrintWriter out) {
         try {
             int fileID = Integer.parseInt(argv[0]);
-            model.setAval(fileID);
+            this.model.setAvailable(fileID);
+            String notification = this.model.getNotification(fileID);
+            for (PrintWriter p : this.replies.values()) {
+                synchronized (p) {
+                    p.println("NOTIFICATION: " + notification);
+                    p.flush();
+                }
+            }
         } catch (InexistentSongException e) {
             synchronized (out) {
-                out.println("This upload was canceled. It exceded the time limit. Please try again");
+                out.println("ERROR: This upload was canceled. It exceeded the time limit. Please try again.");
                 out.flush();
             }
         }
-    };
-
-    private void notifyUsers(final int id) throws InexistentSongException {
-        String n = this.model.getNotif(id);
-        for (PrintWriter p : this.replies.values()) {
-            synchronized (p) {
-                p.println(n);
-                p.flush();
-            }
-        }
     }
 
-    @SuppressWarnings("checkstyle:ConstantName")
-    public static final Map<String, Command> commands = Map.ofEntries(//
-            entry("upload", Worker.upload), //
-            entry("download", Worker.download), //
-            entry("search", Worker.search), //
-            entry("data:", Worker.data), //
-            entry("notification", Worker.notify)//
+    public static final List<String> COMMANDS = Arrays.asList("upload", "download", "search");
+
+    public static final List<String> OPTIONS = Arrays.asList("data", "notification");
+
+    private final Map<String, Command> commands = Map.ofEntries(//
+            Map.entry("upload", this::upload), //
+            Map.entry("download", this::download), //
+            Map.entry("search", this::search), //
+            Map.entry("data", this::data), //
+            Map.entry("notification", this::notify) //
     );
-
-    public Worker(final BoundedBuffer<String> requests, final Map<Integer, PrintWriter> replies,
-            final FileShare model) {
-        this.requests = requests;
-        this.replies = replies;
-        this.model = model;
-    }
 
     @Override
     public void run() {
@@ -182,13 +183,9 @@ public final class Worker implements Runnable {
                 PrintWriter out = this.replies.get(id);
 
                 synchronized (out) {
-                    if (Worker.commands.containsKey(command)) {
+                    if (this.commands.containsKey(command)) {
                         log.debug("(" + id + ") task: " + command);
-                        if (command.equals("notification")) {
-                            int argId = Integer.parseInt(argv[2]);
-                            this.notifyUsers(argId);
-                        }
-                        Worker.commands.get(command).execute(Arrays.copyOfRange(argv, 2, argv.length), out, this.model);
+                        this.commands.get(command).execute(Arrays.copyOfRange(argv, 2, argv.length), out);
                     } else {
                         if (!command.equals("help")) {
                             log.warn("(" + id + ") request not available: " + command);
@@ -196,7 +193,7 @@ public final class Worker implements Runnable {
                             log.debug("(" + id + ") request for help");
                         String listOfCommands = "List of Available Commands:";
 
-                        for (String cmd : Worker.commands.keySet()) {
+                        for (String cmd : this.commands.keySet()) {
                             listOfCommands += " " + cmd + ";";
                         }
 
@@ -204,10 +201,10 @@ public final class Worker implements Runnable {
                         out.flush();
                     }
                 }
-            } catch (InterruptedException | ArrayIndexOutOfBoundsException | InexistentSongException e) {
+            } catch (InterruptedException | ArrayIndexOutOfBoundsException e) {
+                log.error(e.getMessage());
                 e.printStackTrace();
             }
         }
     }
-
 }
