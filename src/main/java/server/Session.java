@@ -112,7 +112,7 @@ public final class Session implements Runnable {
         }
     }
 
-    private Map<String, Command> filters = Map.ofEntries(//
+    private final Map<String, Command> filters = Map.ofEntries(//
             Map.entry("login", this::login), //
             Map.entry("logout", this::logout), //
             Map.entry("register", this::register), //

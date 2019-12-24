@@ -93,6 +93,7 @@ public final class ReplyHandler implements Runnable {
                 }
             }
         } catch (Exception e) {
+            Terminal.error(e.getMessage());
             e.printStackTrace();
         }
     }

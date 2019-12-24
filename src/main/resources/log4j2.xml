@@ -16,7 +16,7 @@
         </RollingFile>
         <RollingFile name="HTMLFile" fileName="logs/index.html"
                      filePattern="logs/app-info-%d{yyyy-MM-dd}.html">
-            <HTMLLayout charset="UTF-8" title="FileShare Sever Logs" locationInfo="true" />
+            <HTMLLayout charset="UTF-8" title="FileShare Server Logs" locationInfo="true" />
             <Policies>
                 <TimeBasedTriggeringPolicy interval="1" modulate="true" />
                 <SizeBasedTriggeringPolicy size="10 MB" />

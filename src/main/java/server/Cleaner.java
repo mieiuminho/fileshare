@@ -1,12 +1,13 @@
 package server;
 
-import model.FileShare;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.TimerTask;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import model.FileShare;
 
 public final class Cleaner extends TimerTask {
     private static Logger log = LogManager.getLogger(Cleaner.class);
@@ -27,5 +28,6 @@ public final class Cleaner extends TimerTask {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        log.trace("Done cleaning");
     }
 }
