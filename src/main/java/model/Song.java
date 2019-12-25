@@ -12,7 +12,6 @@ public final class Song {
 
     private int id;
     private boolean available;
-    private String fileName;
     private String title;
     private String artist;
     private int year;
@@ -21,11 +20,10 @@ public final class Song {
     private Lock lock;
     private LocalDateTime timeLimit;
 
-    public Song(final int id, final String fileName, final String title, final String artist, final int year,
-            final int timeLimit, final Collection<String> c) {
+    public Song(final int id, final String title, final String artist, final int year, final int timeLimit,
+            final Collection<String> c) {
         this.id = id;
         this.available = false;
-        this.fileName = fileName;
         this.title = title;
         this.artist = artist;
         this.year = year;
@@ -36,7 +34,7 @@ public final class Song {
     }
 
     public int getId() {
-        return id;
+        return this.id;
     }
 
     public String getTitle() {
@@ -53,10 +51,6 @@ public final class Song {
 
     public void setAvailable(final boolean b) {
         this.available = b;
-    }
-
-    public String getFileName() {
-        return this.fileName;
     }
 
     public String getArtist() {

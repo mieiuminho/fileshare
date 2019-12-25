@@ -8,9 +8,9 @@
 
 `search <tag>`
 
-`upload <file name> <title> <artist> <year> <file path> <tag>...`
+`upload <file path> <title> <artist> <year> <tag>...`
 
-`download <song ID>`
+`download <song ID> <file name>`
 
 `help`
 

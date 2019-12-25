@@ -10,21 +10,23 @@ import java.nio.file.Paths;
 import java.util.Base64;
 import java.util.Map;
 
+import util.Command;
 import util.Downloader;
 import view.Terminal;
 
 public final class ReplyHandler implements Runnable {
+    private static final String DOWNLOADS_DIR = System.getenv("FILESHARE_CLIENT_DOWNLOADS_DIR");
 
     private BufferedReader in;
     private PrintWriter out;
     private volatile boolean stopFlag;
 
-    private static Handler data = (argv, out) -> {
+    private static Command data = (argv, out) -> {
         try {
-            String fileID = argv[0];
+            String fileName = argv[0];
             int offset = Integer.parseInt(argv[1]);
             byte[] b = Base64.getDecoder().decode(argv[2]);
-            Downloader.toFile("./" + fileID + ".mp3", offset, b);
+            Downloader.toFile(DOWNLOADS_DIR + fileName, offset, b);
         } catch (ArrayIndexOutOfBoundsException e) {
             Terminal.error("Wrong number of arguments");
         } catch (IOException e) {
@@ -32,7 +34,7 @@ public final class ReplyHandler implements Runnable {
         }
     };
 
-    private static Handler request = (argv, out) -> {
+    private static Command request = (argv, out) -> {
         try {
             Path p = Paths.get(argv[1]);
             int chunkSize = Client.getMAXSIZE();
@@ -52,7 +54,7 @@ public final class ReplyHandler implements Runnable {
         }
     };
 
-    private static Map<String, Handler> commands = Map.ofEntries(//
+    private static Map<String, Command> commands = Map.ofEntries(//
             Map.entry("DATA", data), //
             Map.entry("REQUEST", request) //
     );

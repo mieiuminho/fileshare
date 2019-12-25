@@ -16,6 +16,7 @@ import exceptions.DuplicateUserException;
 
 import model.FileShare;
 import util.BoundedBuffer;
+import util.Command;
 
 @SuppressWarnings({"checkstyle:VisibilityModifier", "checkstyle:MagicNumber"})
 public final class Session implements Runnable {

@@ -17,6 +17,7 @@ import exceptions.InexistentSongException;
 
 import model.FileShare;
 import util.BoundedBuffer;
+import util.Command;
 import util.Downloader;
 
 public final class Worker implements Runnable {
@@ -39,12 +40,12 @@ public final class Worker implements Runnable {
         try {
             int year = Integer.parseInt(argv[3]);
             List<String> tags = new ArrayList<>();
-            for (int i = 5; i < argv.length; i++) {
+            for (int i = 4; i < argv.length; i++) {
                 tags.add(argv[i]);
             }
-            int id = this.model.upload(argv[0], argv[1], argv[2], year, tags);
+            int id = this.model.upload(argv[1], argv[2], year, tags);
             synchronized (out) {
-                out.println("REQUEST: " + id + " " + argv[4]);
+                out.println("REQUEST: " + id + " " + argv[0]);
                 out.flush();
             }
             reply = "REPLY: Began upload of the file (" + id + ")";
@@ -64,9 +65,10 @@ public final class Worker implements Runnable {
         String reply = null;
         try {
             int fileID = Integer.parseInt(argv[0]);
+            String fileName = argv[1];
             long chunks = this.model.chunks(fileID);
             synchronized (out) {
-                out.println("REPLY: Began download of " + fileID + "...");
+                out.println("REPLY: Began download of " + fileName + "...");
                 out.flush();
             }
             int chunkSize = this.model.getMaxSize();
@@ -74,11 +76,11 @@ public final class Worker implements Runnable {
                 byte[] buf = this.model.download(fileID, i * chunkSize);
                 String encoded = Base64.getEncoder().encodeToString(buf);
                 synchronized (out) {
-                    out.println("DATA: " + fileID + " " + (i * chunkSize) + " " + encoded);
+                    out.println("DATA: " + fileName + " " + (i * chunkSize) + " " + encoded);
                     out.flush();
                 }
             }
-            reply = "REPLY: The download of " + fileID + " has finished";
+            reply = "REPLY: The download of " + fileName + " has finished";
         } catch (InexistentSongException e) {
             reply = "ERROR: Invalid file ID";
         } catch (InterruptedException e) {

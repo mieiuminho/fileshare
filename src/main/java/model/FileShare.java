@@ -20,7 +20,7 @@ import util.Downloader;
 
 public final class FileShare {
     private static final int KB = 1024;
-    private static final int MAXSIZE = 1024 * KB;
+    private static final int MAXSIZE = Integer.parseInt(System.getenv("FILESHARE_MAX_MEMORY_SIZE")) * KB;
     private static final int MAXDOWN = 5;
     private static final String SONGDIR = System.getenv("FILESHARE_SERVER_DATA_DIR");
     private static final int UPLOADTIMELIMIT = 20;
@@ -46,7 +46,8 @@ public final class FileShare {
         if (!this.songs.containsKey(id)) {
             throw new InexistentSongException();
         }
-        return FileShare.SONGDIR + this.songs.get(id).getFileName();
+
+        return SONGDIR + id;
     }
 
     public void registerUser(final String username, final String password) throws DuplicateUserException {
@@ -72,10 +73,10 @@ public final class FileShare {
         }
     }
 
-    public int upload(final String fileName, final String title, final String artist, final int year,
-            final Collection<String> tags) throws DuplicateSongException {
+    public int upload(final String title, final String artist, final int year, final Collection<String> tags)
+            throws DuplicateSongException {
 
-        Song newSong = new Song(songCounter, fileName, title, artist, year, FileShare.UPLOADTIMELIMIT, tags);
+        Song newSong = new Song(songCounter, title, artist, year, FileShare.UPLOADTIMELIMIT, tags);
 
         synchronized (this.songs) {
             if (this.songs.containsKey(songCounter)) {
@@ -97,7 +98,7 @@ public final class FileShare {
             }
         }
 
-        String filePath = SONGDIR + this.songs.get(id).getFileName();
+        String filePath = this.getSongDir(id);
 
         return new File(filePath).length();
     }
@@ -138,7 +139,7 @@ public final class FileShare {
             this.lock.unlock();
         }
 
-        String buffer = SONGDIR + this.songs.get(id).getFileName();
+        String buffer = this.getSongDir(id);
 
         return Downloader.toArray(buffer, offset, MAXSIZE);
     }
