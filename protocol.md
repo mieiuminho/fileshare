@@ -12,6 +12,8 @@
 
 `download <song ID> <file name>`
 
+`logout`
+
 `help`
 
 ## List of Messages

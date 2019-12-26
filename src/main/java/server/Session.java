@@ -16,12 +16,14 @@ import exceptions.DuplicateUserException;
 
 import model.FileShare;
 import util.BoundedBuffer;
-import util.Command;
+import util.Filter;
 
 @SuppressWarnings({"checkstyle:VisibilityModifier", "checkstyle:MagicNumber"})
 public final class Session implements Runnable {
     private int id;
     private final Socket socket;
+    private BufferedReader in;
+    private PrintWriter out;
     private BoundedBuffer<String> requests;
     private Map<Integer, PrintWriter> replies;
     private FileShare model;
@@ -39,7 +41,7 @@ public final class Session implements Runnable {
         this.loggedIn = null;
     }
 
-    private void login(final String[] argv, final PrintWriter out) {
+    private void login(final String[] argv) {
         String response = null;
         try {
             this.model.login(argv[0], argv[1]);
@@ -54,13 +56,12 @@ public final class Session implements Runnable {
             response = "ERROR: wrong number of arguments";
         } finally {
             synchronized (out) {
-                out.println(response);
-                out.flush();
+                this.out.println(response);
             }
         }
     }
 
-    private void logout(final String[] argv, final PrintWriter out) {
+    private void logout(final String[] argv) {
         String response;
         if (this.loggedIn != null) {
             this.loggedIn = null;
@@ -71,15 +72,14 @@ public final class Session implements Runnable {
             response = "ERROR: Not logged in";
         }
         synchronized (out) {
-            out.println(response);
-            out.flush();
+            this.out.println(response);
         }
     }
 
-    private void register(final String[] argv, final PrintWriter out) {
+    private void register(final String[] argv) {
         String response = null;
         try {
-            model.registerUser(argv[0], argv[1]);
+            this.model.registerUser(argv[0], argv[1]);
             log.info(argv[0] + " registered as a user");
             response = "REPLY: User registered";
         } catch (DuplicateUserException e) {
@@ -89,35 +89,16 @@ public final class Session implements Runnable {
             log.error(this.id + ": wrong number of arguments");
             response = "ERROR: wrong number of arguments";
         } finally {
-            synchronized (out) {
-                out.println(response);
-                out.flush();
+            synchronized (this.out) {
+                this.out.println(response);
             }
         }
     }
 
-    private void help(final String[] argv, final PrintWriter out) {
-        String response = "List of Available Commands: ";
-
-        for (String cmd : this.filters.keySet()) {
-            response += " " + cmd + ";";
-        }
-
-        for (String cmd : Worker.COMMANDS) {
-            response += " " + cmd + ";";
-        }
-
-        synchronized (out) {
-            out.println(response);
-            out.flush();
-        }
-    }
-
-    private final Map<String, Command> filters = Map.ofEntries(//
+    private final Map<String, Filter> filters = Map.ofEntries(//
             Map.entry("login", this::login), //
             Map.entry("logout", this::logout), //
-            Map.entry("register", this::register), //
-            Map.entry("help", this::help) //
+            Map.entry("register", this::register) //
     );
 
     @SuppressWarnings("checkstyle:InnerAssignment")
@@ -126,45 +107,44 @@ public final class Session implements Runnable {
         log.info("Session " + this.id + " established on " + this.socket.getRemoteSocketAddress());
 
         try {
-            BufferedReader in = new BufferedReader(new InputStreamReader(this.socket.getInputStream()));
-            PrintWriter out = new PrintWriter(this.socket.getOutputStream());
+            this.in = new BufferedReader(new InputStreamReader(this.socket.getInputStream()));
+            this.out = new PrintWriter(this.socket.getOutputStream(), true);
 
             synchronized (this.replies) {
-                this.replies.put(this.id, out);
+                this.replies.put(this.id, this.out);
             }
 
             String message;
-            while ((message = in.readLine()) != null && !message.equals("quit")) {
+            while ((message = in.readLine()) != null) {
                 String[] argv = message.trim().split("\\s+");
                 String command = argv[0].toLowerCase();
 
                 if (this.filters.containsKey(command)) {
                     log.trace("(" + this.id + ") request: " + message);
-                    this.filters.get(command).execute(Arrays.copyOfRange(argv, 1, argv.length), out);
-                } else if (Worker.COMMANDS.contains(command) || Worker.OPTIONS.contains(command)) {
+                    this.filters.get(command).execute(Arrays.copyOfRange(argv, 1, argv.length));
+                } else if (Worker.OPTIONS.contains(command)) {
                     try {
                         if (!command.equals("data"))
                             log.trace("(" + this.id + ") request: " + message);
                         if (this.loggedIn != null) {
                             this.requests.add(this.id + " " + message);
                         } else {
-                            synchronized (out) {
+                            synchronized (this.out) {
                                 log.info("Request while not logged in");
-                                out.println("ERROR: You need to be logged in");
-                                out.flush();
+                                this.out.println("ERROR: You need to be logged in");
                             }
                         }
                     } catch (InterruptedException e) {
-                        synchronized (out) {
-                            out.println("ERROR: Couldn't add your request (" + message + ")");
-                            out.flush();
+                        synchronized (this.out) {
+                            this.out.println("ERROR: Couldn't add your request (" + message + ")");
                         }
                         log.error(this.id + ": " + e.getMessage());
-                        e.printStackTrace();
                     }
                 } else {
                     log.error("Not a valid command: " + message);
-                    this.filters.get("help").execute(Arrays.copyOfRange(argv, 1, argv.length), out);
+                    synchronized (this.out) {
+                        this.out.println("ERROR: Not a valid command. Use help to learn more.");
+                    }
                 }
             }
 
@@ -178,7 +158,6 @@ public final class Session implements Runnable {
             log.info("Session " + this.id + " finished!");
         } catch (IOException e) {
             log.error(this.id + ": " + e.getMessage());
-            e.printStackTrace();
         }
     }
 }

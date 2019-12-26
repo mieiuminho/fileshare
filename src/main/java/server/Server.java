@@ -55,7 +55,7 @@ public final class Server {
             this.socket.bind(new InetSocketAddress(HOSTNAME, PORT));
             log.info("Server is up at " + this.socket.getLocalSocketAddress());
         } catch (IOException e) {
-            e.printStackTrace();
+            log.fatal(e.getMessage());
         }
 
         // criar os workers
@@ -72,7 +72,7 @@ public final class Server {
                 new Thread(new Session(id, clientServer, this.requests, this.replies, this.model)).start();
                 log.debug("Session " + id + " accepted connection");
             } catch (IOException e) {
-                e.printStackTrace();
+                log.error(e.getMessage());
             }
             id++;
         }

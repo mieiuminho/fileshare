@@ -9,7 +9,6 @@ import java.util.List;
 public final class Parse {
 
     private Parse() {
-
     }
 
     /**

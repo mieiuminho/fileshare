@@ -46,7 +46,6 @@ public final class Worker implements Runnable {
             int id = this.model.upload(argv[1], argv[2], year, tags);
             synchronized (out) {
                 out.println("REQUEST: " + id + " " + argv[0]);
-                out.flush();
             }
             reply = "REPLY: Began upload of the file (" + id + ")";
         } catch (ArrayIndexOutOfBoundsException e) {
@@ -56,7 +55,6 @@ public final class Worker implements Runnable {
         } finally {
             synchronized (out) {
                 out.println(reply);
-                out.flush();
             }
         }
     }
@@ -69,7 +67,6 @@ public final class Worker implements Runnable {
             long chunks = this.model.chunks(fileID);
             synchronized (out) {
                 out.println("REPLY: Began download of " + fileName + "...");
-                out.flush();
             }
             int chunkSize = this.model.getMaxSize();
             for (int i = 0; i < chunks; i++) {
@@ -77,7 +74,6 @@ public final class Worker implements Runnable {
                 String encoded = Base64.getEncoder().encodeToString(buf);
                 synchronized (out) {
                     out.println("DATA: " + fileName + " " + (i * chunkSize) + " " + encoded);
-                    out.flush();
                 }
             }
             reply = "REPLY: The download of " + fileName + " has finished";
@@ -94,7 +90,6 @@ public final class Worker implements Runnable {
         } finally {
             synchronized (out) {
                 out.println(reply);
-                out.flush();
             }
         }
     }
@@ -114,7 +109,6 @@ public final class Worker implements Runnable {
         } finally {
             synchronized (out) {
                 out.println("REPLY:  " + reply);
-                out.flush();
             }
         }
     }
@@ -128,17 +122,14 @@ public final class Worker implements Runnable {
         } catch (ArrayIndexOutOfBoundsException e) {
             synchronized (out) {
                 out.println("ERROR: wrong number of arguments");
-                out.flush();
             }
         } catch (IOException e) {
             synchronized (out) {
                 out.println("ERROR: The upload was interrupted unexpectedly");
-                out.flush();
             }
         } catch (InexistentSongException e) {
             synchronized (out) {
                 out.println("ERROR: Couldn't write data");
-                out.flush();
             }
         }
     }
@@ -151,20 +142,16 @@ public final class Worker implements Runnable {
             for (PrintWriter p : this.replies.values()) {
                 synchronized (p) {
                     p.println("NOTIFICATION: " + notification);
-                    p.flush();
                 }
             }
         } catch (InexistentSongException e) {
             synchronized (out) {
                 out.println("ERROR: This upload was canceled. It exceeded the time limit. Please try again.");
-                out.flush();
             }
         }
     }
 
-    public static final List<String> COMMANDS = Arrays.asList("upload", "download", "search");
-
-    public static final List<String> OPTIONS = Arrays.asList("data", "notification");
+    public static final List<String> OPTIONS = Arrays.asList("upload", "download", "search", "data", "notification");
 
     private final Map<String, Command> commands = Map.ofEntries(//
             Map.entry("upload", this::upload), //
@@ -180,32 +167,10 @@ public final class Worker implements Runnable {
             try {
                 String[] argv = this.requests.get().split("\\s+");
                 int id = Integer.parseInt(argv[0]);
-                @SuppressWarnings("checkstyle:AvoidInlineConditionals")
-                String command = argv.length >= 2 ? argv[1].toLowerCase() : "HELP";
                 PrintWriter out = this.replies.get(id);
-
-                synchronized (out) {
-                    if (this.commands.containsKey(command)) {
-                        log.debug("(" + id + ") task: " + command);
-                        this.commands.get(command).execute(Arrays.copyOfRange(argv, 2, argv.length), out);
-                    } else {
-                        if (!command.equals("help")) {
-                            log.warn("(" + id + ") request not available: " + command);
-                        } else
-                            log.debug("(" + id + ") request for help");
-                        String listOfCommands = "List of Available Commands:";
-
-                        for (String cmd : this.commands.keySet()) {
-                            listOfCommands += " " + cmd + ";";
-                        }
-
-                        out.println(listOfCommands);
-                        out.flush();
-                    }
-                }
+                this.commands.get(argv[1].toLowerCase()).execute(Arrays.copyOfRange(argv, 2, argv.length), out);
             } catch (InterruptedException | ArrayIndexOutOfBoundsException e) {
                 log.error(e.getMessage());
-                e.printStackTrace();
             }
         }
     }

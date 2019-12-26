@@ -11,7 +11,7 @@
     <img src="img/logo.png" alt="File Share" width="400px">
 </div>
 
-> A distributed  file sharing system
+> A distributed file sharing system
 
 ## :rocket: Getting Started
 
