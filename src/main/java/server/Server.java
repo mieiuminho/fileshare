@@ -15,8 +15,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import model.FileShare;
-import util.BoundedBuffer;
+import util.HashPriorityBuffer;
 import util.Parse;
+import util.RequestsBuffer;
 import view.Terminal;
 
 public final class Server {
@@ -28,12 +29,12 @@ public final class Server {
     private static Logger log = LogManager.getLogger(Server.class);
 
     private ServerSocket socket;
-    private BoundedBuffer<String> requests;
+    private RequestsBuffer<String> requests;
     private Map<Integer, PrintWriter> replies;
     private FileShare model;
 
     public Server() {
-        this.requests = new BoundedBuffer<>(Server.REQUESTS_MAX_SIZE);
+        this.requests = new HashPriorityBuffer(Server.REQUESTS_MAX_SIZE);
         this.replies = new HashMap<>();
         this.model = new FileShare();
     }

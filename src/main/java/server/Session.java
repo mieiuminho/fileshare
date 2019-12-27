@@ -15,8 +15,8 @@ import exceptions.AuthenticationException;
 import exceptions.DuplicateUserException;
 
 import model.FileShare;
-import util.BoundedBuffer;
 import util.Filter;
+import util.RequestsBuffer;
 
 @SuppressWarnings({"checkstyle:VisibilityModifier", "checkstyle:MagicNumber"})
 public final class Session implements Runnable {
@@ -24,14 +24,14 @@ public final class Session implements Runnable {
     private final Socket socket;
     private BufferedReader in;
     private PrintWriter out;
-    private BoundedBuffer<String> requests;
+    private RequestsBuffer<String> requests;
     private Map<Integer, PrintWriter> replies;
     private FileShare model;
     private String loggedIn;
 
     private static Logger log = LogManager.getLogger(Session.class);
 
-    public Session(final int id, final Socket socket, final BoundedBuffer<String> requests,
+    public Session(final int id, final Socket socket, final RequestsBuffer<String> requests,
             final Map<Integer, PrintWriter> replies, final FileShare model) {
         this.id = id;
         this.socket = socket;

@@ -32,7 +32,7 @@ public final class ReplyHandler implements Runnable {
         this.stopFlag = true;
     }
 
-    private void data(String[] argv) {
+    private void data(final String[] argv) {
         try {
             String fileName = argv[0];
             int offset = Integer.parseInt(argv[1]);
@@ -45,7 +45,7 @@ public final class ReplyHandler implements Runnable {
         }
     }
 
-    private void request(String[] argv) {
+    private void request(final String[] argv) {
         try {
             Path p = Paths.get(argv[1]);
             int chunkSize = Client.getMAXSIZE();

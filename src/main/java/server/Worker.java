@@ -16,18 +16,18 @@ import exceptions.DuplicateSongException;
 import exceptions.InexistentSongException;
 
 import model.FileShare;
-import util.BoundedBuffer;
 import util.Command;
 import util.Downloader;
+import util.RequestsBuffer;
 
 public final class Worker implements Runnable {
-    private BoundedBuffer<String> requests;
+    private RequestsBuffer<String> requests;
     private Map<Integer, PrintWriter> replies;
     private FileShare model;
 
     private static Logger log = LogManager.getLogger(Worker.class);
 
-    public Worker(final BoundedBuffer<String> requests, final Map<Integer, PrintWriter> replies,
+    public Worker(final RequestsBuffer<String> requests, final Map<Integer, PrintWriter> replies,
             final FileShare model) {
         this.requests = requests;
         this.replies = replies;

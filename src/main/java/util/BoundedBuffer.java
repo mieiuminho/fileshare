@@ -11,7 +11,7 @@ import java.util.concurrent.locks.ReentrantLock;
  *
  * @param <E> the type of elements in this queue
  */
-public class BoundedBuffer<E> {
+public class BoundedBuffer<E> implements RequestsBuffer<E> {
     private int max;
     private List<E> buffer;
     private Lock lock;
