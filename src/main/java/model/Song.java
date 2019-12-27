@@ -28,7 +28,7 @@ public final class Song {
         this.artist = artist;
         this.year = year;
         this.tags = new ArrayList<>(c);
-        this.lock = new ReentrantLock();
+        this.lock = new ReentrantLock(true);
         this.numDownloads = 0;
         this.timeLimit = LocalDateTime.now().plusMinutes(timeLimit);
     }

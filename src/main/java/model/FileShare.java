@@ -35,7 +35,7 @@ public final class FileShare {
     public FileShare() {
         this.users = new HashMap<>();
         this.songs = new HashMap<>();
-        this.lock = new ReentrantLock();
+        this.lock = new ReentrantLock(true);
         this.isCrowded = this.lock.newCondition();
         this.downloading = 0;
         this.songCounter = 0;

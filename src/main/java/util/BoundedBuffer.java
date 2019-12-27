@@ -21,7 +21,7 @@ public class BoundedBuffer<E> implements RequestsBuffer<E> {
     public BoundedBuffer(final int size) {
         this.max = size;
         this.buffer = new ArrayList<>(size);
-        this.lock = new ReentrantLock();
+        this.lock = new ReentrantLock(true);
         this.notFull = this.lock.newCondition();
         this.notEmpty = this.lock.newCondition();
     }

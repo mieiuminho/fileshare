@@ -46,7 +46,7 @@ public final class HashPriorityBuffer implements RequestsBuffer<String> {
         this.max = size;
         this.priorities = new HashMap<>();
         this.buffer = new PriorityQueue<>(size, Comparator.comparing(r -> this.priorities.get(getSessionID(r))));
-        this.lock = new ReentrantLock();
+        this.lock = new ReentrantLock(true);
         this.notFull = this.lock.newCondition();
         this.notEmpty = this.lock.newCondition();
     }
