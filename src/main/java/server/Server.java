@@ -20,11 +20,12 @@ import util.Parse;
 import util.RequestsBuffer;
 import view.Terminal;
 
+
 public final class Server {
     private static final String HOSTNAME = System.getenv("FILESHARE_SERVER_HOSTNAME");
     private static final int PORT = Integer.parseInt(System.getenv("FILESHARE_SERVER_PORT"));
-    private static final int N_WORKERS = 5;
-    private static final int REQUESTS_MAX_SIZE = 10;
+    private static final int REQUESTS_MAX_SIZE = Integer.parseInt(System.getenv("FILESHARE_SERVER_REQUEST_LIMIT"));
+    private static final int N_WORKERS = Integer.parseInt(System.getenv("FILESHARE_SERVER_NUMBER_OF_THREADS"));
     private static final long CLOCK = 1800000; // 30 * 60 * 1000
     private static Logger log = LogManager.getLogger(Server.class);
 
