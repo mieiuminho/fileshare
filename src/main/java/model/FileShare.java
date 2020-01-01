@@ -2,6 +2,7 @@ package model;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Map;
 import java.util.HashMap;
@@ -17,13 +18,15 @@ import exceptions.DuplicateSongException;
 import exceptions.InexistentSongException;
 
 import util.Downloader;
+import util.Parse;
 
-public final class FileShare {
+public final class FileShare implements Serializable {
     private static final int KB = 1024;
     private static final int MAXSIZE = Integer.parseInt(System.getenv("FILESHARE_MAX_MEMORY_SIZE")) * KB;
     private static final int MAXDOWN = 5;
-    private static final String SONGDIR = System.getenv("FILESHARE_SERVER_DATA_DIR");
-    private static final int UPLOADTIMELIMIT = 20;
+    private static final String DATA_DIR = System.getenv("FILESHARE_SERVER_DATA_DIR");
+    private static final String MODEL_DATA = DATA_DIR + "model.ser";
+    private static final int UPLOAD_TIME_LIMIT = 20;
 
     private Map<String, User> users;
     private Map<Integer, Song> songs;
@@ -47,7 +50,7 @@ public final class FileShare {
             throw new InexistentSongException();
         }
 
-        return SONGDIR + id;
+        return DATA_DIR + id;
     }
 
     public void registerUser(final String username, final String password) throws DuplicateUserException {
@@ -76,7 +79,7 @@ public final class FileShare {
     public int upload(final String title, final String artist, final int year, final Collection<String> tags)
             throws DuplicateSongException {
 
-        Song newSong = new Song(songCounter, title, artist, year, FileShare.UPLOADTIMELIMIT, tags);
+        Song newSong = new Song(songCounter, title, artist, year, FileShare.UPLOAD_TIME_LIMIT, tags);
 
         synchronized (this.songs) {
             if (this.songs.containsKey(songCounter)) {
@@ -187,4 +190,11 @@ public final class FileShare {
         return toBeRemoved;
     }
 
+    public void save() throws IOException {
+        Parse.saveObject(this, MODEL_DATA);
+    }
+
+    public FileShare load() throws IOException, ClassNotFoundException {
+        return (FileShare) Parse.loadObject(MODEL_DATA);
+    }
 }

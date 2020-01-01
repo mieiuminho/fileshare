@@ -1,12 +1,13 @@
 package model;
 
+import java.io.Serializable;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Objects;
 import java.util.Random;
 
-public final class User {
+public final class User implements Serializable {
 
     @SuppressWarnings("checkstyle:MagicNumber")
     public static String encryptPassword(final String password) {

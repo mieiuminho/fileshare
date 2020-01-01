@@ -11,6 +11,8 @@ import java.util.Timer;
 import java.util.Date;
 import java.util.List;
 
+import sun.misc.Signal;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -49,6 +51,12 @@ public final class Server {
     public void startUp() {
         log.debug("Working Directory " + System.getProperty("user.dir"));
 
+        // handler to Ctrl + C
+        Signal.handle(new Signal("INT"), this::saveModel);
+
+        // load previous model data
+        this.loadModel();
+
         new Timer().scheduleAtFixedRate(new Cleaner(this.model), new Date(), Server.CLOCK);
 
         // criar o servidor
@@ -77,6 +85,26 @@ public final class Server {
                 log.error(e.getMessage());
             }
             id++;
+        }
+    }
+
+    public void saveModel(final Signal signal) {
+        try {
+            this.model.save();
+            log.info("Saved model data successfully");
+        } catch (IOException e) {
+            log.error(e.getMessage());
+        } finally {
+            System.exit(0);
+        }
+    }
+
+    public void loadModel() {
+        try {
+            this.model = this.model.load();
+            log.info("Loaded model data successfully");
+        } catch (IOException | ClassNotFoundException e) {
+            log.error(e.getMessage());
         }
     }
 
