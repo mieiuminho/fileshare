@@ -115,7 +115,7 @@ public final class FileShare {
     public byte[] download(final int id, final int offset)
             throws InexistentSongException, InterruptedException, IOException {
 
-        while (this.downloading == MAXDOWN) {
+        while (this.downloading == MAXDOWN && offset == 0) {
             this.isCrowded.await();
         }
 
