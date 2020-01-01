@@ -22,7 +22,6 @@ import util.Parse;
 import util.RequestsBuffer;
 import view.Terminal;
 
-
 public final class Server {
     private static final String HOSTNAME = System.getenv("FILESHARE_SERVER_HOSTNAME");
     private static final int PORT = Integer.parseInt(System.getenv("FILESHARE_SERVER_PORT"));
