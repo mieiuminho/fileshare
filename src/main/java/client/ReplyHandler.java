@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.net.SocketException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -93,10 +92,12 @@ public final class ReplyHandler implements Runnable {
                     }
                 }
             }
-        } catch (SocketException e) {
+        } catch (NullPointerException e) {
+            Terminal.info("Server closed!");
             System.exit(0);
         } catch (IOException e) {
             Terminal.error(e.getMessage());
+            System.exit(1);
         }
     }
 }

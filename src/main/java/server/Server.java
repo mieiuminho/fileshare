@@ -51,7 +51,7 @@ public final class Server {
         log.debug("Working Directory " + System.getProperty("user.dir"));
 
         // handler to Ctrl + C
-        Signal.handle(new Signal("INT"), this::saveModel);
+        Signal.handle(new Signal("INT"), this::exit);
 
         // load previous model data
         this.loadModel();
@@ -87,14 +87,14 @@ public final class Server {
         }
     }
 
-    public void saveModel(final Signal signal) {
+    public void exit(final Signal signal) {
         try {
             this.model.save();
             log.info("Saved model data successfully");
+            System.exit(0);
         } catch (IOException e) {
             log.error(e.getMessage());
-        } finally {
-            System.exit(0);
+            System.exit(1);
         }
     }
 
