@@ -31,7 +31,7 @@ public final class FileShare implements Serializable {
     private Map<String, User> users;
     private Map<Integer, Song> songs;
     private Lock lock;
-    private Condition isCrowded;
+    private Condition notCrowded;
     private int downloading;
     private int songCounter;
 
@@ -39,15 +39,16 @@ public final class FileShare implements Serializable {
         this.users = new HashMap<>();
         this.songs = new HashMap<>();
         this.lock = new ReentrantLock(true);
-        this.isCrowded = this.lock.newCondition();
+        this.notCrowded = this.lock.newCondition();
         this.downloading = 0;
         this.songCounter = 0;
     }
 
     public String getSongDir(final int id) throws InexistentSongException {
-
-        if (!this.songs.containsKey(id)) {
-            throw new InexistentSongException();
+        synchronized (this.songs) {
+            if (!this.songs.containsKey(id)) {
+                throw new InexistentSongException();
+            }
         }
 
         return DATA_DIR + id;
@@ -59,8 +60,7 @@ public final class FileShare implements Serializable {
                 throw new DuplicateUserException();
             }
 
-            User newUser = new User(username, password);
-            users.put(username, newUser);
+            users.put(username, new User(username, password));
         }
     }
 
@@ -78,20 +78,21 @@ public final class FileShare implements Serializable {
 
     public int upload(final String title, final String artist, final int year, final Collection<String> tags)
             throws DuplicateSongException {
+        this.lock.lock();
+        int id = songCounter++;
+        this.lock.unlock();
 
-        Song newSong = new Song(songCounter, title, artist, year, FileShare.UPLOAD_TIME_LIMIT, tags);
+        Song newSong = new Song(id, title, artist, year, FileShare.UPLOAD_TIME_LIMIT, tags);
 
         synchronized (this.songs) {
             if (this.songs.containsKey(songCounter)) {
                 throw new DuplicateSongException();
             }
 
-            this.songs.put(songCounter, newSong);
+            this.songs.put(id, newSong);
         }
-        this.lock.lock();
-        int r = songCounter++;
-        this.lock.unlock();
-        return r;
+
+        return id;
     }
 
     public long sizeFile(final int id) throws InexistentSongException {
@@ -116,85 +117,88 @@ public final class FileShare implements Serializable {
     }
 
     public byte[] download(final int id, final int offset)
-            throws InexistentSongException, InterruptedException, IOException {
+            throws InterruptedException, InexistentSongException, IOException {
+        this.lock.lock();
 
-        while (this.downloading == MAXDOWN && offset == 0) {
-            this.isCrowded.await();
-        }
+        try {
+            while (this.downloading == MAXDOWN && offset == 0) {
+                this.notCrowded.await();
+            }
 
-        long chunks = this.sizeFile(id) / MAXSIZE;
+            long chunks = this.sizeFile(id) / MAXSIZE;
 
-        if (offset == 0) {
-            this.lock.lock();
-            this.downloading++;
+            if (offset == 0) {
+                this.downloading++;
+                this.songs.get(id).download();
+            }
+
+            if (offset == chunks * MAXSIZE) {
+                this.downloading--;
+            }
+
+            if (this.downloading < MAXDOWN) {
+                this.notCrowded.signalAll();
+            }
+        } finally {
             this.lock.unlock();
-            this.songs.get(id).download();
-        }
-        if (offset == chunks * MAXSIZE) {
-            this.lock.lock();
-            this.downloading--;
-            this.lock.unlock();
         }
 
-        if (this.downloading < MAXDOWN) {
-            this.lock.lock();
-            this.isCrowded.signalAll();
-            this.lock.unlock();
-        }
-
-        String buffer = this.getSongDir(id);
-
-        return Downloader.toArray(buffer, offset, MAXSIZE);
+        return Downloader.toArray(this.getSongDir(id), offset, MAXSIZE);
     }
 
     public void setAvailable(final int id) throws InexistentSongException {
-        if (!this.songs.containsKey(id)) {
-            throw new InexistentSongException();
-        }
+        synchronized (this.songs) {
+            if (!this.songs.containsKey(id)) {
+                throw new InexistentSongException();
+            }
 
-        this.songs.get(id).setAvailable(true);
+            this.songs.get(id).setAvailable(true);
+        }
     }
 
     public String getNotification(final int id) throws InexistentSongException {
-        if (!this.songs.containsKey(id)) {
-            throw new InexistentSongException();
+        synchronized (this.songs) {
+            if (!this.songs.containsKey(id)) {
+                throw new InexistentSongException();
+            }
+            Song s = this.songs.get(id);
+
+            return "A new song is available. " + s.getTitle() + " by " + s.getArtist();
         }
-        Song s = this.songs.get(id);
-        return "A new song is available. " + s.getTitle() + " by " + s.getArtist();
     }
 
     public List<String> search(final String tag) {
-        List<String> r = new ArrayList<>();
+        synchronized (this.songs) {
+            List<String> r = new ArrayList<>();
 
-        synchronized (this.songs.values()) {
             for (Song s : this.songs.values()) {
                 if (s.isAvailable() && s.filter(tag))
                     r.add(s.toString());
             }
-        }
 
-        return r;
+            return r;
+        }
     }
 
     public List<String> cleanup() throws InexistentSongException {
-        List<String> toBeRemoved = new ArrayList<>();
-        for (Song s : this.songs.values()) {
-            if (!s.isAvailable() && s.hasExpired()) {
-                String path = this.getSongDir(s.getId());
-                toBeRemoved.add(path);
-                synchronized (this.songs.values()) {
+        synchronized (this.songs) {
+            List<String> toBeRemoved = new ArrayList<>();
+            for (Song s : this.songs.values()) {
+                if (!s.isAvailable() && s.hasExpired()) {
+                    String path = this.getSongDir(s.getId());
+                    toBeRemoved.add(path);
                     this.songs.remove(s.getId());
                 }
             }
+            return toBeRemoved;
         }
-        return toBeRemoved;
     }
 
-    public void save() throws IOException {
+    public synchronized void save() throws IOException {
         Parse.saveObject(this, MODEL_DATA);
     }
 
-    public FileShare load() throws IOException, ClassNotFoundException {
+    public synchronized FileShare load() throws IOException, ClassNotFoundException {
         return (FileShare) Parse.loadObject(MODEL_DATA);
     }
 }
